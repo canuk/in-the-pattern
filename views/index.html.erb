@@ -23,6 +23,24 @@
       -o-transform: rotate(270deg);
       transform: rotate(270deg);        
     }
+    .approach_rwy_num {
+      float: right;
+      position: relative;
+      display: inline-block;
+      -webkit-transform: rotate(270deg);
+      -moz-transform: rotate(270deg);
+      -o-transform: rotate(270deg);
+      transform: rotate(270deg);         
+    }
+    .departure_rwy_num {
+      float: left;
+      position: relative;
+      display: inline-block;
+      -webkit-transform: rotate(90deg);
+      -moz-transform: rotate(90deg);
+      -o-transform: rotate(90deg);
+      transform: rotate(90deg);        
+    }
     </style>
   </head>
   <body>
@@ -30,20 +48,20 @@
       <h1>In The Pattern</h1>
       Overhead: <div id="overhead"></div>
       <hr/>
-      <table>
+      <table width="100%">
         <tr>
-          <td>Upwind: <div id="upwind"></div></td>
-          <td>|--------------RWY----------------|</td>
-          <td>Final: <div id="final"></div></td>
+          <td width="25%"><span class="badge badge-light">Upwind</span> <div id="upwind"></div></td>
+          <td align="center" width="50%" style="background: #000; color: #FFF"><div class="departure_rwy_num">05</div> - - - - - - - - - - - - - - <span class="badge badge-secondary">KHMT</span> - - - - - - - - - - - - - - - - <div class="approach_rwy_num">23</div></td>
+          <td width="25%"><span class="badge badge-light">Final</span> <div id="final"></div></td>
         </tr>
         <tr>
-          <td class="end_legs">Crosswind: <div id="crosswind"></div></td>
-          <td></td>
-          <td class="end_legs">Base: <div id="base"></div></td>
+          <td valign="top" align="center" width="25%" class="end_legs"><span class="badge badge-light">Crosswind</span> <div id="crosswind"></div></td>
+          <td width="50%">&nbsp;</td>
+          <td align="center" width="25%" class="end_legs"><span class="badge badge-light">Base</span> <div id="base"></div></td>
         </tr>
         <tr>
           <td></td>
-          <td>Downwind: <div id="downwind"></div></td>
+          <td align="center"><span class="badge badge-light">Downwind</span> <div id="downwind"></div></td>
           <td></td>
         </tr>
       </table> 

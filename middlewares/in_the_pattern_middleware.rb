@@ -9,8 +9,9 @@ require 'csv'
 
 module InThePattern
   class InThePatternBackend
-    KEEPALIVE_TIME = 3 # in seconds
+    KEEPALIVE_TIME = 1 # in seconds
     CHANNEL        = "in-the-pattern"
+    TPA = 3000 # I added 500 to it.
 
     def initialize(app)
       @app     = app
@@ -34,14 +35,16 @@ module InThePattern
         port = 30003
         sock = TCPSocket.open(hostname, port)
         
-        overhead = [[32.57459172113418, -117.20214843749999], [34.175453097578526, -119.2181396484375], [34.72355492704221, -117.55920410156249], [34.261756524459805, -116.34521484375001], [32.713355353177555, -115.5047607421875]]
+        overhead = [[33.787192,-117.083074], [33.788048,-116.950208], [33.674409,-116.952611], [33.674695,-117.089941]]
+        
+        
         
         # KHMT Traffic Pattern
-        upwind = [[33.734297564682706, -117.0219039916992], [33.733119808460394, -117.02121734619139], [33.72305468688201, -117.0455503463745], [33.72159121985561, -117.0479965209961], [33.71877129840258, -117.05447673797607], [33.720270508682205, -117.05529212951659]]
-        crosswind = [[33.72255496923924, -117.0289421081543], [33.72769478320399, -117.03203201293945], [33.71662952401543, -117.06207275390624], [33.71220302097189, -117.05984115600586]]
-        downwind = [[33.738722928405565, -116.99147701263428], [33.733851446803584, -117.0017123222351], [33.72241219223553, -117.02911376953124], [33.712060226751866, -117.05975532531738], [33.69806524140501, -117.05314636230469], [33.72262635765204, -116.98379516601561]]
-        base = [[33.74040022435128, -117.00096130371095], [33.74132807610421, -117.00093984603882], [33.74455763566878, -116.99304342269897], [33.738687240901484, -116.9915199279785], [33.73383360204015, -117.00173377990723], [33.73825898969434, -117.00430870056152], [33.739151177296705, -117.0049738883972]]
-        final = [[33.735206,-117.020215], [33.733992,-117.019270], [33.735563,-117.015354], [33.737633,-117.009808], [33.740381,-117.000956], [33.741309,-117.000946], [33.744556,-116.993092], [33.746340,-116.994637], [33.740702,-117.007340]]
+        upwind = [[33.731881,-117.024530], [33.720102,-117.052339], [33.723814,-117.054914], [33.733451,-117.025646]]
+        crosswind = [[33.711463,-117.049850], [33.715033,-117.040323], [33.723386,-117.043327], [33.720316,-117.054056]]
+        downwind = [[33.734815,-116.994328], [33.711605,-117.049946], [33.703894,-117.043423], [33.726883,-116.983342]]
+        base = [[33.739739,-117.004327], [33.742309,-116.998319], [33.734208,-116.994371], [33.732066,-117.000679]]
+        final = [[33.734574,-117.021013], [33.734003,-117.020712], [33.741488,-117.000894], [33.742345,-117.002182]]
         
         def inside?(vertices, test_point)
           vs = vertices + [vertices.first]
@@ -91,47 +94,65 @@ module InThePattern
             # If it's in the next leg, remove it from the previous leg hash
             # airplane info should include identifier, etc.
             if inside?(upwind, airplane_position)
-              puts "UPWIND - ID:"+hexident+" ALT:"+alt
-              @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "upwind", :altitude => alt.to_s}))
-              airplane_upwind[hexident] = airplane_info
-              if airplane_final[hexident]
-               airplane_final.delete(hexident)
+              if alt.to_i < TPA
+                puts "UPWIND - ID:"+hexident+" ALT:"+alt
+                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "upwind", :altitude => alt.to_s}))
+                airplane_upwind[hexident] = airplane_info
+                if airplane_final[hexident]
+                 airplane_final.delete(hexident)
+                 @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "final", :altitude => ""}))
+                end
               end
             elsif inside?(crosswind, airplane_position)
-              puts "CROSSWIND - ID:"+hexident+" ALT:"+alt
-              @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "crosswind", :altitude => alt.to_s}))
-              airplane_crosswind[hexident] = airplane_info
-              if airplane_upwind[hexident]
-               airplane_upwind.delete(hexident)
+              if alt.to_i < TPA
+                puts "CROSSWIND - ID:"+hexident+" ALT:"+alt
+                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "crosswind", :altitude => alt.to_s}))
+                airplane_crosswind[hexident] = airplane_info
+                if airplane_upwind[hexident]
+                 airplane_upwind.delete(hexident)
+                 @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "upwind", :altitude => ""}))
+                end
               end
             elsif inside?(downwind, airplane_position)
-              puts "DOWNWIND - ID:"+hexident+" ALT:"+alt
-              @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "downwind", :altitude => alt.to_s}))
-              airplane_downwind[hexident] = airplane_info
-              if airplane_crosswind[hexident]
-               airplane_crosswind.delete(hexident)
+              if alt.to_i < TPA
+                puts "DOWNWIND - ID:"+hexident+" ALT:"+alt
+                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "downwind", :altitude => alt.to_s}))
+                airplane_downwind[hexident] = airplane_info
+                if airplane_crosswind[hexident]
+                 airplane_crosswind.delete(hexident)
+                 @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "crosswind", :altitude => ""}))
+                end
               end
             elsif inside?(base, airplane_position)
-              puts "BASE - ID:"+hexident+" ALT:"+alt
-              @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "base", :altitude => alt.to_s}))
-              airplane_base[hexident] = airplane_info
-              if airplane_downwind[hexident]
-               airplane_downwind.delete(hexident)
+              if alt.to_i < TPA
+                puts "BASE - ID:"+hexident+" ALT:"+alt
+                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "base", :altitude => alt.to_s}))
+                airplane_base[hexident] = airplane_info
+                if airplane_downwind[hexident]
+                 airplane_downwind.delete(hexident)
+                 @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "downwind", :altitude => ""}))
+                end
               end
             elsif inside?(final, airplane_position)
-              puts "FINAL - ID:"+hexident+" ALT:"+alt
-              @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "final", :altitude => alt.to_s}))
-              airplane_final[hexident] = airplane_info
-              if airplane_base[hexident]
-               airplane_base.delete(hexident)
+              if alt.to_i < TPA
+                puts "FINAL - ID:"+hexident+" ALT:"+alt
+                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "final", :altitude => alt.to_s}))
+                airplane_final[hexident] = airplane_info
+                if airplane_base[hexident]
+                 airplane_base.delete(hexident)
+                 @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "base", :altitude => ""}))
+                end
               end
+              puts DateTime.parse(Hash[*airplane_final.first][8] + "T" + Hash[*airplane_final.first][9] + "-07-00")
             elsif inside?(overhead, airplane_position)
-              puts "OVERHEAD - ID:"+hexident+" ALT:"+alt
-              @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "overhead", :altitude => alt.to_s}))
+              if alt.to_i > TPA + 500
+                puts "OVERHEAD - ID:"+hexident+" ALT:"+alt
+                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "overhead", :altitude => alt.to_s}))
+              end
             end    
         
         	end
-          
+       
         end
         
         puts "Upwind"
@@ -148,6 +169,9 @@ module InThePattern
     
       end
       
+      # Need to delete orphaned notices from each leg.
+      # Compare the current DateTime from the last entry in the leg hash and if it's older than a minute, remove it and clear the web socket message
+      # This will parse the hash DateTime.parse(Hash[*airplane_final.first][8] + "T" + Hash[*airplane_final.first][9] + "-07-00")
       
     end
 
