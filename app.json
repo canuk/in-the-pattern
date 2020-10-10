@@ -1,0 +1,9 @@
+{
+  "name": "in-the-pattern",
+  "description": "A Sinatra/WebSockets Server for running In The Pattern",
+  "website": "https://github.com/canuk/in-the-pattern",
+  "success_url": "/",
+  "addons": ["rediscloud"],
+  "env": {},
+  "scripts": {}
+}
