@@ -26,3 +26,5 @@ $ foreman start
 ```
 
 Visit <http://localhost:5000> to see the application.
+
+(c) 2020 Reuben Thiessen
