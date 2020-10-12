@@ -1,6 +1,6 @@
-# rwy.py
-# Runway Numbers
-# Display the approach and departure runway numbers
+# aip.py
+# Airplane In Pattern!
+# Display tail number in the correct leg in pattern.
 
 import sys, getopt
 import time
@@ -52,6 +52,17 @@ def main(argv):
     
     leg = input_leg
     leg_name = adafruit_ssd1306.SSD1306_I2C(128, 32, tca[pattern_leg[leg]])
+    if clear_oled == "leg" :
+        leg_name.fill(0)
+        leg_name.show()
+        sys.exit()
+    if clear_oled == "all" :    
+        for leg in pattern_leg.keys():
+            leg_name = adafruit_ssd1306.SSD1306_I2C(128, 32, tca[pattern_leg[leg]])
+            leg_name.fill(0)
+            leg_name.show()
+            sys.exit()
+                
     W, H = (leg_name.width, leg_name.height)
     leg_name.fill(0)
     leg_name.show()
@@ -61,9 +72,6 @@ def main(argv):
     draw_tail_number.text(((W-w)/2,(H-h)/2), tail_number, font=tail_font, fill=255)
     leg_name.image(tail_number_img)
     leg_name.show()
-    if clear_oled == "true" :
-        leg_name.fill(0)
-        leg_name.show()
-    
+
 if __name__ == "__main__":
     main(sys.argv[1:])

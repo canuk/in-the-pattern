@@ -46,8 +46,8 @@ runway['dep'] = 1
 
 # Runway Names
 rwy_number = {}
-rwy_number['appch'] = "23"
-rwy_number['dep'] = "5"
+rwy_number['appch'] = "28L"
+rwy_number['dep'] = "10R"
 
 for rwy in runway.keys():
     rwy_name = adafruit_ssd1306.SSD1306_I2C(128, 64, tca[runway[rwy]])

@@ -1,6 +1,6 @@
-# aip.py
-# Airplane In Pattern!
-# Display tail number in the correct leg in pattern.
+# rwy.py
+# Runway Numbers
+# Display the approach and departure runway numbers
 
 import sys, getopt
 import time
