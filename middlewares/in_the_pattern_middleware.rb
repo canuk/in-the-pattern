@@ -37,7 +37,9 @@ module InThePattern
         
         overhead = [[33.787192,-117.083074], [33.788048,-116.950208], [33.674409,-116.952611], [33.674695,-117.089941]]
         
-        
+        appch_rwy = "23"
+        dep_rwy = "5"
+        system 'python3 ~/rwy.py -a '+ appch_rwy + ' -d ' + dep_rwy
         
         # KHMT Traffic Pattern
         upwind = [[33.731881,-117.024530], [33.720102,-117.052339], [33.723814,-117.054914], [33.733451,-117.025646]]
@@ -97,50 +99,60 @@ module InThePattern
               if alt.to_i < TPA
                 puts "UPWIND - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "upwind", :altitude => alt.to_s}))
+                system 'python3 ~/aip.py -l upwind -t' + hexident.to_s
                 airplane_upwind[hexident] = airplane_info
                 if airplane_final[hexident]
                  airplane_final.delete(hexident)
                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "final", :altitude => ""}))
+                 system 'python3 ~/aip.py -l final -c leg' # clear the final leg if the airplane is now taking off.
                 end
               end
             elsif inside?(crosswind, airplane_position)
               if alt.to_i < TPA
                 puts "CROSSWIND - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "crosswind", :altitude => alt.to_s}))
+                system 'python3 ~/aip.py -l crosswind -t' + hexident.to_s
                 airplane_crosswind[hexident] = airplane_info
                 if airplane_upwind[hexident]
                  airplane_upwind.delete(hexident)
                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "upwind", :altitude => ""}))
+                 system 'python3 ~/aip.py -l upwind -c leg'
                 end
               end
             elsif inside?(downwind, airplane_position)
               if alt.to_i < TPA
                 puts "DOWNWIND - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "downwind", :altitude => alt.to_s}))
+                system 'python3 ~/aip.py -l downwind -t' + hexident.to_s
                 airplane_downwind[hexident] = airplane_info
                 if airplane_crosswind[hexident]
                  airplane_crosswind.delete(hexident)
                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "crosswind", :altitude => ""}))
+                 system 'python3 ~/aip.py -l crosswind -c leg'
                 end
               end
             elsif inside?(base, airplane_position)
               if alt.to_i < TPA
                 puts "BASE - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "base", :altitude => alt.to_s}))
+                system 'python3 ~/aip.py -l base -t' + hexident.to_s
                 airplane_base[hexident] = airplane_info
                 if airplane_downwind[hexident]
                  airplane_downwind.delete(hexident)
                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "downwind", :altitude => ""}))
+                 system 'python3 ~/aip.py -l downwind -c leg'
                 end
               end
             elsif inside?(final, airplane_position)
               if alt.to_i < TPA
                 puts "FINAL - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "final", :altitude => alt.to_s}))
+                system 'python3 ~/aip.py -l final -t' + hexident.to_s
                 airplane_final[hexident] = airplane_info
                 if airplane_base[hexident]
                  airplane_base.delete(hexident)
                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "base", :altitude => ""}))
+                 system 'python3 ~/aip.py -l base -c leg'
                 end
               end
               puts DateTime.parse(Hash[*airplane_final.first][8] + "T" + Hash[*airplane_final.first][9] + "-07-00")
@@ -165,6 +177,7 @@ module InThePattern
         puts airplane_base
         puts "Final"
         puts airplane_final
+        system 'python3 ~/aip.py -l final -c all' # clear the pattern
         sock.close               # Close the socket when done     
     
       end

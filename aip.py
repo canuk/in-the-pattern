@@ -61,7 +61,7 @@ def main(argv):
             leg_name = adafruit_ssd1306.SSD1306_I2C(128, 32, tca[pattern_leg[leg]])
             leg_name.fill(0)
             leg_name.show()
-            sys.exit()
+        sys.exit()
                 
     W, H = (leg_name.width, leg_name.height)
     leg_name.fill(0)
