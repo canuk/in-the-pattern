@@ -1,0 +1,14 @@
+[Unit]
+Description=InThePattern Sinatra Server
+After=network.target
+
+[Service]
+ExecStart=foreman start
+WorkingDirectory=/home/pi/itp_live
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
