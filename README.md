@@ -26,3 +26,37 @@ $ foreman start
 ```
 
 Visit <http://localhost:5000> to see the application.
+
+## On the Raspberry Pi
+Install Python3
+Install Ruby
+
+Install Python Libraries
+There is some version of `board` that isn't the right one, we need the one from Adafruit Blinka
+
+```
+sudo apt install -y python3-dev
+sudo apt install -y python-smbus i2c-tools
+sudo apt install -y python3-pil
+sudo apt install -y python3-pip
+sudo apt install -y python3-setuptools
+sudo apt install -y python3-rpi.gpio
+   
+sudo pip3 install adafruit-circuitpython-ssd1306
+pip3 install adafruit-circuitpython-tca9548a
+pip3 uninstall board
+pip3 install Adafruit-Blinka
+pip3 install RPI.GPIO
+
+sudo apt-get install libmagickwand-dev imagemagick
+```
+   
+Install Ruby gems
+`bundle install`
+
+Setup [Redis](https://habilisbest.com/install-redis-on-your-raspberrypi)
+Copy the itp_live.service to `/etc/systemd/system/itp_live.service`
+`sudo systemctl start itp_live.service`
+
+Make it run on boot:
+`sudo systemctl enable itp_live.service`
