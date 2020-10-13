@@ -21,6 +21,10 @@ module InThePattern
       @arrivals = Arrival.order(arrived_at: :desc).limit(5)
       erb :"arrivals.html"
     end
+    
+    get "/geofence" do
+      erb :"geofence.html"
+    end
 
     get "/assets/js/application.js" do
       content_type :js

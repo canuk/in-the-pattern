@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <header>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Traffic Pattern GeoFence Creator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">    
+    <style>
+      body {
+        padding-top: 5rem;
+      }
+      #map {
+        height: 600px;  
+        width: 100%;
+       }
+    </style>  
+  </header>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="#">Traffic Pattern GeoFence Creator</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+      </div>
+    </nav>
+
+  <main role="main" class="container">
+    <div id="map"></div>
+    <br/><br/>
+    <div class="card">
+    <h4 class="card-header">Geofence Points</h4>
+    <div class="card-body">
+      <label id="points"></label><br/>
+    </div>
+  </main>
+    <script type="text/javascript">
+    //global variables
+    var drawingManager;
+    var globalRectangle;
+    var rectcontrolText;
+    
+    //Clear map button
+    function clearControl(controlDiv, map) {
+    
+        // Set CSS for the control border.
+        var controlUI = document.createElement('div');
+        controlUI.style.backgroundColor = '#fff';
+        controlUI.style.border = '2px solid #fff';
+        controlUI.style.borderRadius = '3px';
+        controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+        controlUI.style.cursor = 'pointer';
+        controlUI.style.marginBottom = '22px';
+        controlUI.style.textAlign = 'center';
+        controlUI.title = 'Click to clear map';
+        controlDiv.appendChild(controlUI);
+    
+        // Set CSS for the control interior.
+        var controlText = document.createElement('div');
+        controlText.style.color = 'rgb(25,25,25)';
+        controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+        controlText.style.fontSize = '16px';
+        controlText.style.lineHeight = '38px';
+        controlText.style.paddingLeft = '5px';
+        controlText.style.paddingRight = '5px';
+        controlText.innerHTML = 'Clear Map';
+        controlUI.appendChild(controlText);
+    
+        // Setup the click event listeners: simply set the map to Chicago.
+        controlUI.addEventListener('click', function() {
+            //clear rectangle, add the drawing tools back and clear the Point locations
+            globalRectangle.setMap(null);
+            drawingManager.setOptions({
+                    drawingMode: null,
+                    drawingControl: true
+            })
+            document.getElementById('points').innerHTML = "";
+        });
+    
+    }
+    
+		function LoadGPXFileIntoGoogleMap(map, filename)
+		{
+			var request = new XMLHttpRequest();
+			request.open("GET", filename, true);
+			request.onreadystatechange = function()
+			{
+				if (request.readyState == 4)
+				{
+					parser = new GPXParser(request.responseXML, map);
+					parser.SetTrackColour("#ff0000");					// Set the track line colour
+					parser.SetTrackWidth(5);							// Set the track line width
+					parser.SetMinTrackPointDelta(0.001);				// Set the minimum distance between track points
+					parser.CenterAndZoom(request.responseXML);			// Center and Zoom the map over all the points.
+					parser.AddTrackpointsToMap();						// Add the trackpoints
+					parser.AddWaypointsToMap();							// Add the waypoints
+				}
+			}
+			request.send(null);
+		}    
+        
+    // Initialize and add the map
+    function initMap() {
+        // The location of KHMT
+        var khmt = {lat: 33.733396, lng: -117.022987}; 
+        // The map, centered at khmt
+        var map = new google.maps.Map(
+        document.getElementById('map'), {zoom: 14, center: khmt, scrollwheel: true, disableDoubleClickZoom: false});
+    
+        drawingManager = new google.maps.drawing.DrawingManager({
+              drawingControl: true,
+              drawingControlOptions: {
+                position: google.maps.ControlPosition.TOP_CENTER,
+                drawingModes: ['rectangle','polygon']
+              },
+              rectangleOptions: {
+                strokeColor: '#7CFC00',
+                strokeWeight: 1,
+                fillColor: '#7CFC00',
+                fillOpacity: 0.5,
+                editable: true,
+                draggable: true
+                },
+    		polygonOptions: {
+                strokeColor: '#7CFC00',
+                strokeWeight: 1,
+                fillColor: '#7CFC00',
+                fillOpacity: 0.5,
+                editable: true,
+                draggable: true
+                }
+            });
+            drawingManager.setMap(map);
+            
+    		google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+    			var contentString ='';
+    			drawingManager.setOptions({
+                    drawingMode: null,
+                    drawingControl: false
+                })
+    			globalRectangle = polygon;	
+    				
+    			// Iterate over all the points of the polygon
+    			var vertices = polygon.getPath();
+          var pointsAsArray = "[";
+    			for (var i = 0; i < vertices.getLength(); i++) {
+    				var xy = vertices.getAt(i);
+    				contentString += 'Point ' + (i+1) + ': ' + xy.lat().toFixed(6) + ', ' + xy.lng().toFixed(6) + '<br/>';
+            pointsAsArray += "[" + xy.lat().toFixed(6) + "," + xy.lng().toFixed(6) + "], ";
+    			}
+          pointsAsArray = pointsAsArray.slice(0, -2) + "]";
+    			document.getElementById('points').innerHTML = contentString + '<br/>' + pointsAsArray;
+    			
+    			//Add listener for the polygon being moved to a new spot
+                google.maps.event.addListener(polygon, 'drag', function(e2) {
+                    // Iterate over all the points of the polygon
+    				var vertices = polygon.getPath();
+    				var contentString ='';
+            var pointsAsArray = "[";
+    				for (var i = 0; i < vertices.getLength(); i++) {
+    					var xy = vertices.getAt(i);
+    					contentString += 'Point ' + (i+1) + ': ' + xy.lat().toFixed(6) + ', ' + xy.lng().toFixed(6) + '<br/>';
+              pointsAsArray += "[" + xy.lat().toFixed(6) + "," + xy.lng().toFixed(6) + "], ";
+    				}
+            pointsAsArray = pointsAsArray.slice(0, -2) + "]";
+    				document.getElementById('points').innerHTML = contentString + '<br/>' + pointsAsArray;
+                });
+    			
+    			//Add listener for the polygon being point being moved
+                google.maps.event.addListener(polygon, 'mouseup', function(e2) {
+    				// Iterate over all the points of the polygon
+    				var vertices = polygon.getPath();
+    				var contentString ='';
+            var pointsAsArray = "[";
+    				for (var i = 0; i < vertices.getLength(); i++) {
+    					var xy = vertices.getAt(i);
+    					contentString += 'Point ' + (i+1) + ': ' + xy.lat().toFixed(6) + ', ' + xy.lng().toFixed(6) + '<br/>';
+              pointsAsArray += "[" + xy.lat().toFixed(6) + "," + xy.lng().toFixed(6) + "], ";
+    				}
+            pointsAsArray = pointsAsArray.slice(0, -2) + "]";
+    				document.getElementById('points').innerHTML = contentString + '<br/>' + pointsAsArray;
+                });
+    		});
+    	
+    	
+    		google.maps.event.addListener(drawingManager, 'rectanglecomplete', function(rectangle) {
+    			var contentString ='';
+    			drawingManager.setOptions({
+                    drawingMode: null,
+                    drawingControl: false
+                })
+    		
+    			globalRectangle = rectangle;
+                var bounds = rectangle.getBounds();
+                var northEast = bounds.getNorthEast();
+                var southWest = bounds.getSouthWest();
+                
+    			var contentString = 'Point 1: ' + northEast.lat().toFixed(6) + ', ' + northEast.lng().toFixed(6) + '<br/>Point 2: ' + northEast.lat().toFixed(6) + ', ' + southWest.lng().toFixed(6) + '<br/>Point 3: ' + southWest.lat().toFixed(6) + ', ' + southWest.lng().toFixed(6) + '<br/>Point 4: ' + southWest.lat().toFixed(6) + ', ' + northEast.lng().toFixed(6);
+    			
+    			document.getElementById('points').innerHTML = contentString;
+            
+                //Add listener for the rectangle being resized
+                google.maps.event.addListener(rectangle, 'bounds_changed', function(e2) {
+                    var bounds = rectangle.getBounds();
+    				var northEast = bounds.getNorthEast();
+    				var southWest = bounds.getSouthWest();
+    
+    				var contentString = 'Point 1: ' + northEast.lat().toFixed(6) + ', ' + northEast.lng().toFixed(6) + '<br/>Point 2: ' + northEast.lat().toFixed(6) + ', ' + southWest.lng().toFixed(6) + '<br/>Point 3: ' + southWest.lat().toFixed(6) + ', ' + southWest.lng().toFixed(6) + '<br/>Point 4: ' + southWest.lat().toFixed(6) + ', ' + northEast.lng().toFixed(6);
+    
+    				document.getElementById('points').innerHTML = contentString;
+                });
+            });
+    
+            
+    
+        // constructor passing in this DIV.
+        var clearControlDiv = document.createElement('div');
+        var ClearControl = new clearControl(clearControlDiv, map);
+        clearControlDiv.index = 1;
+        map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(clearControlDiv);
+        
+        LoadGPXFileIntoGoogleMap(map, "hmt_pattern.xml");
+    }
+        </script>
+        <!--Load the API from the specified URL
+        * The async attribute allows the browser to render the page while the API loads
+        * The key parameter will contain your own API key (which is not needed for this tutorial)
+        * The callback parameter executes the initMap() function
+        -->
+        
+        <script type="text/javascript"
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSJ-Iu3gkcwY5gvTgp9fNVW51bFi8yxQM&libraries=drawing&callback=initMap">
+        </script>
+        <script src="/assets/js/loadgpx.js" type="text/javascript"></script>
+        
+  </body>
+</html>
