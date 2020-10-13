@@ -6,3 +6,7 @@ gem "faye-websocket"
 gem "sinatra"
 gem "puma"
 gem "redis"
+
+gem "sinatra-activerecord"
+gem "sqlite3"
+gem "rake"

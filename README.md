@@ -60,3 +60,7 @@ Copy the itp_live.service to `/etc/systemd/system/itp_live.service`
 
 Make it run on boot:
 `sudo systemctl enable itp_live.service`
+
+
+`bundle exec rake db:seed`
+
