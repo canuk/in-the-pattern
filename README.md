@@ -69,6 +69,7 @@ Install Ruby gems
 First install sqlite3
 `apt-get install libsqlite3-dev`
 `sudo gem install bundler`
+`sudo gem install foreman`
 
 Setup [Redis](https://habilisbest.com/install-redis-on-your-raspberrypi)
 
@@ -76,14 +77,21 @@ Grab the repo from Github
 `git clone https://github.com/canuk/in-the-pattern.git`
 `bundle install`
 
+Copy `.env.sample` to `.env` to get started.
+`cp env.sample .env`
 
+Seed the database with default values:
+`bundle exec rake db:seed`
 
 Copy the in-the-pattern.service to `/etc/systemd/system/in-the-pattern.service`
+`sudo cp in-the-pattern.service /etc/systemd/system/in-the-pattern.service`
 `sudo systemctl start in-the-pattern.service`
+
+Check to make sure it's working
+`systemctl status in-the-pattern.service`
 
 Make it run on boot:
 `sudo systemctl enable in-the-pattern.service`
 
 
-`bundle exec rake db:seed`
 

@@ -18,7 +18,7 @@ def main(argv):
     
     # Create the TCA9548A object and give it the I2C bus
     tca = adafruit_tca9548a.TCA9548A(i2c)
-    rwy_font = ImageFont.truetype('16x8pxl-mono.ttf', 72)
+    rwy_font = ImageFont.truetype('/home/pi/in-the-pattern/16x8pxl-mono.ttf', 72)
     
     # multiplexer index for runway number OLEDs
     runway = {}
