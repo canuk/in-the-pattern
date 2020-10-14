@@ -201,8 +201,6 @@ module InThePattern
         
         	end
           
-          puts "AIP: #{airplanes_in_the_pattern}"
-          
           # Have any of the airplanes on final, landed?
           # we say if we haven't got a return from them after 10 seconds, and they were on final, then they landed
           unless airplanes_on_final.empty?
