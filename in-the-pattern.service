@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=foreman start
-WorkingDirectory=/home/pi/itp_live
+WorkingDirectory=/home/pi/in-the-pattern
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

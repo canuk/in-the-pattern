@@ -66,18 +66,23 @@ sudo apt-get install -y libmagickwand-dev imagemagick
 ```
    
 Install Ruby gems
+First install sqlite3
+`apt-get install libsqlite3-dev`
 `sudo gem install bundler`
 
+Setup [Redis](https://habilisbest.com/install-redis-on-your-raspberrypi)
+
 Grab the repo from Github
+`git clone https://github.com/canuk/in-the-pattern.git`
 `bundle install`
 
 
-Setup [Redis](https://habilisbest.com/install-redis-on-your-raspberrypi)
-Copy the itp_live.service to `/etc/systemd/system/itp_live.service`
-`sudo systemctl start itp_live.service`
+
+Copy the in-the-pattern.service to `/etc/systemd/system/in-the-pattern.service`
+`sudo systemctl start in-the-pattern.service`
 
 Make it run on boot:
-`sudo systemctl enable itp_live.service`
+`sudo systemctl enable in-the-pattern.service`
 
 
 `bundle exec rake db:seed`
