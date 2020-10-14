@@ -33,6 +33,9 @@ Setup CLI/Autologin
 Setup Wifi
 Setup Interfacing Options: SSH, I2C
 Setup Timezone, Locale, Keyboard
+`sudo nano /boot/config.txt`
+Add this to the bottom of the file to Rotate Display 90 deg
+`display_rotate=1`
 
 Install git and Ruby (Python3 is already on the Lite Image)
 ```
