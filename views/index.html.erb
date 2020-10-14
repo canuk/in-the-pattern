@@ -67,12 +67,6 @@
         </tr>
       </table> 
       <hr/>
-      <div style="width: 80vw; min-width: 300px; max-width: 50em;">
-      <div class="tick" data-did-init="handleTickInit">
-        <div data-repeat="true" data-layout="horizontal fit" data-transform="upper -> split -> delay(random, 100, 150)">
-          <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z)" class="tick-char"></span>
-        </div>
-      </div> 
       <div id="recently_landed"</div>
       </div>
     </div>
@@ -90,29 +84,5 @@
         integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" 
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="assets/js/application.js"></script>
-    <script type="text/javascript" src="assets/js/flip.min.js"></script>
-    <script type="text/javascript" >
-        function handleTickInit(tick) {
-            // words to show on billboard
-            var rotation = [
-                'Arrivals'
-            ];
-    
-            // current rotation index (we start at the first word)
-            var index = 0;
-    
-            // each 3 seconds we'll update the billboard
-            Tick.helper.interval(function(){
-    
-                // get the word at the current index
-                tick.value = rotation[index];
-    
-                // when we reach the end we start over at zero
-                index = index < rotation.length - 1 ? index + 1 : 0;
-    
-            }, 3000);
-    
-        }
-    </script>    
   </body>
 </html>

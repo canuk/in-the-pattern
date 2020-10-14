@@ -18,7 +18,7 @@ module InThePattern
     get "/arrivals" do
       @settings = Setting.first
       @airport = Airport.find(@settings.airport_id)
-      @arrivals = Arrival.order(arrived_at: :desc).limit(5)
+      @arrivals = Arrival.order(arrived_at: :desc).limit(50)
       erb :"arrivals.html"
     end
     

@@ -101,74 +101,6 @@ module InThePattern
         #therefore gets() returns nil
         	fields = line.split(",")
           airplane_info = fields
-          
-          # Have any of the airplanes on final, landed?
-          # we say if we haven't got a return from them after 10 seconds, and they were on final, then they landed
-          unless airplanes_on_final.empty?
-            airplanes_on_final.each do |aof|
-              last_return = DateTime.strptime(airplane_final[aof][6] + 'T' + airplane_final[aof][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
-              if (Time.now - 10) > Time.parse(last_return.to_s)  # is older than 10 seconds
-                puts "LOGGING ARRIVAL"
-                Arrival.create(airport_id: @airport.id, tail_number: aof, arrived_at: last_return)
-                airplane_final.delete(aof) # Remove it from the airplane_final hash
-                airplanes_on_final.delete(aof) # remove it from the airplanes on final
-                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "final", :altitude => ""}))
-                if ENV['PI'] == "true"
-                 system 'python3 ~/aip.py -l final -c leg'
-                end            
-              end
-            end
-          end
-          
-          # clear airplanes who left the pattern without landing
-          unless airplane_upwind.empty?
-            airplane_upwind.each do |a|
-              last_return = DateTime.strptime(airplane_upwind[a][6] + 'T' + airplane_upwind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
-              if (Time.now - 10) > Time.parse(last_return.to_s)  # is older than 10 seconds
-                airplane_upwind.delete(a)
-                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "upwind", :altitude => ""}))
-                if ENV['PI'] == "true"
-                 system 'python3 ~/aip.py -l upwind -c leg'
-                end            
-              end
-            end
-          end 
-          unless airplane_crosswind.empty?
-            airplane_crosswind.each do |a|
-              last_return = DateTime.strptime(airplane_crosswind[a][6] + 'T' + airplane_crosswind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
-              if (Time.now - 10) > Time.parse(last_return.to_s)  # is older than 10 seconds
-                airplane_crosswind.delete(a)
-                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "crosswind", :altitude => ""}))
-                if ENV['PI'] == "true"
-                 system 'python3 ~/aip.py -l crosswind -c leg'
-                end            
-              end
-            end
-          end   
-          unless airplane_downwind.empty?
-            airplane_downwind.each do |a|
-              last_return = DateTime.strptime(airplane_downwind[a][6] + 'T' + airplane_downwind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
-              if (Time.now - 10) > Time.parse(last_return.to_s)  # is older than 10 seconds
-                airplane_downwind.delete(a)
-                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "downwind", :altitude => ""}))
-                if ENV['PI'] == "true"
-                 system 'python3 ~/aip.py -l downwind -c leg'
-                end            
-              end
-            end
-          end    
-          unless airplane_base.empty?
-            airplane_base.each do |a|
-              last_return = DateTime.strptime(airplane_base[a][6] + 'T' + airplane_base[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
-              if (Time.now - 10) > Time.parse(last_return.to_s)  # is older than 10 seconds
-                airplane_base.delete(a)
-                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "base", :altitude => ""}))
-                if ENV['PI'] == "true"
-                 system 'python3 ~/aip.py -l base -c leg'
-                end            
-              end
-            end
-          end                                        
         
         	if fields[0].to_s == "MSG" && fields[1].to_s == "3" #Airborne Position Message
             
@@ -187,7 +119,7 @@ module InThePattern
                 puts "UPWIND - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "upwind", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 ~/aip.py -l upwind -t' + hexident.to_s
+                  system 'python3 ~/aip.py -l upwind -t ' + hexident.to_s
                 end
                 airplane_upwind[hexident] = airplane_info
               end
@@ -197,7 +129,7 @@ module InThePattern
                 puts "CROSSWIND - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "crosswind", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 ~/aip.py -l crosswind -t' + hexident.to_s
+                  system 'python3 ~/aip.py -l crosswind -t ' + hexident.to_s
                 end
                 airplane_crosswind[hexident] = airplane_info
                 if airplane_upwind[hexident]
@@ -214,7 +146,7 @@ module InThePattern
                 puts "DOWNWIND - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "downwind", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 ~/aip.py -l downwind -t' + hexident.to_s
+                  system 'python3 ~/aip.py -l downwind -t ' + hexident.to_s
                 end
                 airplane_downwind[hexident] = airplane_info
                 if airplane_crosswind[hexident]
@@ -231,7 +163,7 @@ module InThePattern
                 puts "BASE - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "base", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 ~/aip.py -l base -t' + hexident.to_s
+                  system 'python3 ~/aip.py -l base -t ' + hexident.to_s
                 end
                 airplane_base[hexident] = airplane_info
                 if airplane_downwind[hexident]
@@ -245,10 +177,11 @@ module InThePattern
             elsif inside?(final, airplane_position)
               if alt.to_i < TPA
                 airplanes_on_final |= [hexident] # add ident to array if not already in there
+                puts "Airplanes on final: #{airplanes_on_final}"
                 puts "FINAL - ID:"+hexident+" ALT:"+alt
                 @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "final", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 ~/aip.py -l final -t' + hexident.to_s
+                  system 'python3 ~/aip.py -l final -t ' + hexident.to_s
                 end
                 airplane_final[hexident] = airplane_info
                 if airplane_base[hexident]
@@ -267,7 +200,75 @@ module InThePattern
             end    
         
         	end
-       
+          
+          puts "AIP: #{airplanes_in_the_pattern}"
+          
+          # Have any of the airplanes on final, landed?
+          # we say if we haven't got a return from them after 10 seconds, and they were on final, then they landed
+          unless airplanes_on_final.empty?
+            unless airplane_final.empty?
+            airplanes_on_final.each do |aof|
+              last_return = DateTime.strptime(airplane_final[aof][6] + 'T' + airplane_final[aof][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+              if (Time.now - 5) > Time.parse(last_return.to_s)  # is older than 10 seconds
+                puts "LOGGING ARRIVAL"
+                  Arrival.find_or_create_by(airport_id: @airport.id, tail_number: aof, arrived_at: last_return) # find_or_create_by prevents creating duplicates... I think...
+                  airplane_final.delete(aof) # Remove it from the airplane_final hash
+                  airplanes_on_final.delete(aof) # remove it from the airplanes on final
+                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "final", :altitude => ""}))
+                if ENV['PI'] == "true"
+                 system 'python3 ~/aip.py -l final -c leg'
+                end            
+              end
+            end
+          end
+          end
+          
+          # clear airplanes who left the pattern without landing
+          unless airplanes_in_the_pattern.empty?
+            airplanes_in_the_pattern.each do |a|
+              five_seconds_ago = Time.now - 5
+              if airplane_upwind[a]
+                last_return = DateTime.strptime(airplane_upwind[a][6] + 'T' + airplane_upwind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+                if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
+                  airplane_upwind.delete(a)
+                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "upwind", :altitude => ""}))
+                  if ENV['PI'] == "true"
+                   system 'python3 ~/aip.py -l upwind -c leg'
+                  end            
+                end
+                if airplane_crosswind[a]
+                  last_return = DateTime.strptime(airplane_crosswind[a][6] + 'T' + airplane_crosswind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+                  if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
+                    airplane_crosswind.delete(a)
+                    @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "crosswind", :altitude => ""}))
+                    if ENV['PI'] == "true"
+                     system 'python3 ~/aip.py -l crosswind -c leg'
+                    end            
+                  end
+                end
+                if airplane_downwind[a]
+                  last_return = DateTime.strptime(airplane_downwind[a][6] + 'T' + airplane_downwind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+                  if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
+                    airplane_downwind.delete(a)
+                    @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "downwind", :altitude => ""}))
+                    if ENV['PI'] == "true"
+                     system 'python3 ~/aip.py -l downwind -c leg'
+                    end            
+                  end
+                end
+                if airplane_base[a]
+                  last_return = DateTime.strptime(airplane_base[a][6] + 'T' + airplane_base[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+                  if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
+                    airplane_base.delete(a)
+                    @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "base", :altitude => ""}))
+                    if ENV['PI'] == "true"
+                     system 'python3 ~/aip.py -l base -c leg'
+                    end            
+                  end
+                end                
+              end
+            end
+          end        
         end
 
         if ENV['PI'] == "true"

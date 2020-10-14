@@ -28,31 +28,46 @@ $ foreman start
 Visit <http://localhost:5000> to see the application.
 
 ## On the Raspberry Pi
-Install Python3
-Install Ruby
+Grab a Raspbian Lite Image
+Setup CLI/Autologin
+Setup Wifi
+Setup Interfacing Options: SSH, I2C
+Setup Timezone, Locale, Keyboard
 
-Install Python Libraries
-There is some version of `board` that isn't the right one, we need the one from Adafruit Blinka
+Install git and Ruby (Python3 is already on the Lite Image)
+```
+sudo apt-get install -y git
+sudo apt-get install -y ruby-full
+```
+
+Install x-window so we can run a chromeless browser to display the arrivals [link](https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/)
+```
+sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox
+sudo apt-get install --no-install-recommends chromium-browser
 
 ```
-sudo apt install -y python3-dev
-sudo apt install -y python-smbus i2c-tools
-sudo apt install -y python3-pil
-sudo apt install -y python3-pip
-sudo apt install -y python3-setuptools
-sudo apt install -y python3-rpi.gpio
-   
-sudo pip3 install adafruit-circuitpython-ssd1306
-pip3 install adafruit-circuitpython-tca9548a
-pip3 uninstall board
-pip3 install Adafruit-Blinka
-pip3 install RPI.GPIO
 
-sudo apt-get install libmagickwand-dev imagemagick
+Install Python Libraries
+```
+sudo apt install -y python3-dev
+sudo apt install -y python-smbus i2c-tools python3-pil python3-pip python3-setuptools python3-rpi.gpio
+   
+sudo pip3 install adafruit-circuitpython-tca9548a
+sudo pip3 install adafruit-circuitpython-ssd1306
+
+## I Don't think we need these as they are installed with the stuff above
+#sudo pip3 install Adafruit-Blinka
+#sudo pip3 install RPI.GPIO
+
+sudo apt-get install -y libmagickwand-dev imagemagick
 ```
    
 Install Ruby gems
+`sudo gem install bundler`
+
+Grab the repo from Github
 `bundle install`
+
 
 Setup [Redis](https://habilisbest.com/install-redis-on-your-raspberrypi)
 Copy the itp_live.service to `/etc/systemd/system/itp_live.service`
