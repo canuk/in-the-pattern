@@ -80,6 +80,9 @@ Grab the repo from Github
 Copy `.env.sample` to `.env` to get started.
 `cp env.sample .env`
 
+`nano .env`
+change to `PI=true`
+
 Seed the database with default values:
 `bundle exec rake db:seed`
 

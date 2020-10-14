@@ -16,30 +16,44 @@
     <link href="assets/css/application.css" rel="stylesheet" media="screen"> 
     <link href="assets/css/flip.min.css" rel="stylesheet">
   </head>
-  <body style="margin: 20px 10px 20px 10px">
-    <main class="container-xl">
-      <div style="width: 100vw; min-width: 300px; max-width: 50em;">
-      <div class="tick" data-did-init="handleTickInit">
-        <div data-repeat="true" data-layout="horizontal fit" data-transform="upper -> split -> delay(random, 100, 150)">
-          <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z)" class="tick-char"></span>
-        </div>
-      </div>       
-      <table class="table table-bordered table-striped">
-        <thead>
-        <tr>
-          <th>Tail Number</th>
-          <th>Arrival Time</th>
-        </tr>
-        </thead>
-        <tbody>
-        <% @arrivals.each do |arrival| %>
-        <tr>
-          <td><%= arrival.tail_number %></td>
-          <td><%= arrival.arrived_at.strftime("%H:%M") %></td>
-        </tr>
-        <% end %>
-        </tbody>
-      </table>
+  <body style="margin: 30px 10px 20px 10px">
+    <main>
+      <div style="width: 100vw; min-width: 300px; max-width: 100%; text-align: center">
+        <div class="tick" data-value="ARRIVALS">
+          <div data-repeat="true" data-layout="horizontal fit">
+            <span data-view="flip"></span>
+          </div>
+        </div>             
+        <table class="table table-bordered table-striped">
+          <thead>
+          <tr>
+            <th>Tail Number</th>
+            <th>Arrival Time</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @arrivals.each do |arrival| %>
+          <tr>
+            <td><%= arrival.tail_number %></td>
+            <td><%= arrival.arrived_at.strftime("%H:%M") %></td>
+          </tr>
+          <% end %>
+          </tbody>
+        </table>
+        <div class="tick" data-value="OVERHEAD">
+          <div data-repeat="true" data-layout="horizontal fit">
+            <span data-view="flip"></span>
+          </div>
+        </div> 
+        <hr/>
+        <span style="color: yellow">
+        <div class="tick" data-value="12345678" data-did-init="updateOverhead">
+          <div data-repeat="true" data-layout="horizontal fit" data-transform="upper -> split -> delay(random, 100, 150)">
+            <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z0-9)" class="tick-char"></span>
+          </div>
+        </div>  
+        </span>       
+      </div>           
     </main>
     <script
 			  src="https://code.jquery.com/jquery-3.5.1.min.js"
@@ -56,25 +70,37 @@
     <script type="text/javascript" src="assets/js/application.js"></script>
     <script type="text/javascript" src="assets/js/flip.min.js"></script>
     <script type="text/javascript" >
+        function updateOverhead(tick) {
+            // words to show on billboard
+            var rotation = [
+                '  N21043',
+                '  N5954W'
+            ];
+            // current rotation index (we start at the first word)
+            var index = 0;
+            // each 3 seconds we'll update the billboard
+            Tick.helper.interval(function(){
+                // get the word at the current index
+                tick.value = rotation[index];
+                // when we reach the end we start over at zero
+                index = index < rotation.length - 1 ? index + 1 : 0;
+            }, 5500);
+        }
         function handleTickInit(tick) {
             // words to show on billboard
             var rotation = [
-                'Arrivals'
+                'Arrivals',
+                '  N21043'
             ];
-    
             // current rotation index (we start at the first word)
             var index = 0;
-    
             // each 3 seconds we'll update the billboard
             Tick.helper.interval(function(){
-    
                 // get the word at the current index
                 tick.value = rotation[index];
-    
                 // when we reach the end we start over at zero
                 index = index < rotation.length - 1 ? index + 1 : 0;
-    
-            }, 3000);
+            }, 7000);
     
         }
     </script>      
