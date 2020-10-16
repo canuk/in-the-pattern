@@ -43,7 +43,7 @@ sudo apt-get install -y git
 sudo apt-get install -y ruby-full
 ```
 
-Install x-window so we can run a chromeless browser to display the arrivals [link](https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/)
+Install x-windows so we can run a chromeless browser to display the arrivals [link](https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/)
 ```
 sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox
 sudo apt-get install --no-install-recommends chromium-browser
@@ -97,4 +97,50 @@ Make it run on boot:
 `sudo systemctl enable in-the-pattern.service`
 
 
+Calibrate Touch Screen
+install xi
+```
+sudo apt-get install libx11-dev libxext-dev libxi-dev x11proto-input-dev 
+wget http://github.com/downloads/tias/xinput_calibrator/xinput_calibrator-0.7.5.tar.gz
+tar -zxvf xinput_calibrator*.tar.gz
+./configure
+make
+sudo make install 
+```
 
+`sudo nano /usr/share/X11/xorg.conf.d/40-libinput.conf`
+Under the Section
+```
+Section "InputClass"
+    Identifier "libinput touchscreen catchall"
+```
+add the line: `Option "TransformationMatrix" "0 1 0 -1 0 1 0 0 1"`
+This will switch the orientation for the touch screen so it matches the vertical layout. Then the touchscreen section should look like this:
+
+```
+Section "InputClass"
+    Identifier "libinput touchscreen catchall"
+    MatchIsTouchScreen "on"
+    MacthDevicePath "/dev/input/event*"
+    Driver "libinput"
+    Option "TransformationMatrix" "0 1 0 -1 0 1 0 0 1"
+EndSection
+```
+
+With Chrome (on X11) running on the pi, from the terminal (either ssh in or ctrl-alt-F2 to get a different session and then ctrl-alt-F1 to go back) type `DISPLAY=:0 xinput_calibrator` and then you'll get the calibrator.
+After you've calibrated it, Copy the output and then put it into the `99-calibration.conf`
+```
+sudo mkdir /etc/X11/xorg.conf.d/
+sudo nano /etc/X11/xorg.conf.d/99-calibration.conf
+```
+
+Install Boot Splash Screen
+```
+sudo apt-get install fbi
+sudo cp in-the-pattern-splash.png /etc/splash.png
+sudo cp asplashscreen.service /etc/systemd/system/asplashscreen.service
+sudo systemctl enable asplashscreen.service
+```
+
+
+(c) 2020 Reuben Thiessen
