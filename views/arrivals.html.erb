@@ -15,21 +15,18 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link href="assets/css/application.css" rel="stylesheet" media="screen"> 
     <link href="assets/css/flip.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="assets/css/flapper.css">
   </head>
   <body style="margin: 40px 10px 20px 10px; background-color: black;">
     <main>
       <div style="width: 100vw; min-width: 300px; max-width: 100%;">
-        <p class="text-center" style="color: yellow;font-size: 96px;margin-bottom: 0"><img src="/assets/img/arrival_icon.png" height="160" width="160"/> ARRIVALS</p>
-          <div id="newest_arrival"></div>      
+        <p class="text-center" style="color: yellow;font-size: 96px;margin-bottom: 0"><img src="/assets/img/arrival_icon.png" height="160" width="160"/>&nbsp;ARRIVALS</p>
+          <% 5.times do |n| %>
+          <div id="arrival_<%=n%>"></div>
           <% @arrivals.each do |arrival| %>
-            <div class="tick" data-value="  <%= arrival.tail_number %>">
-              <div data-repeat="true" data-layout="horizontal fit">
-                <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z0-9)" class="tick-char"></span>
-              </div>
-            </div>
-            <hr/>        
+                
           <% end %>
-        <p class="text-center" style="color: yellow;font-size: 96px;margin-bottom: 0"><img src="/assets/img/departure_icon.png" height="160" width="160"/> DEPARTURES</p>   
+        <p class="text-center" style="color: yellow;font-size: 96px;margin-bottom: 0"><img src="/assets/img/departure_icon.png" height="160" width="160"/>&nbsp;DEPARTURES</p>   
         
         <% 4.times do %>
         <div class="tick" data-value="12345678">
@@ -60,68 +57,13 @@
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="assets/js/application.js"></script>
     <script type="text/javascript" src="assets/js/flip.min.js"></script>
-          <script type="text/javascript">
-            // create Tick Counter
-            $('#newest_arrival').tick('create', {
-                value: "        ",
-                view:
-                // definition for top level tick element
-                {
-                    children:[
-                        // presenter object
-                        {
-                            root: 'div',
-                            layout: 'horizontal fit',
-                            children: [
-                                // presenter object
-                                {
-                                    view: 'flip'
-                                },
-                                // presenter object
-                                {
-                                    view: 'line',
-                                    root: 'div'
-                                }
-                            ]
-                        }
-                    ]
-                }
-            });   
-          </script>     
-    <script type="text/javascript" >
-        function updateOverhead(tick) {
-            // words to show on billboard
-            var rotation = [
-                '  N21043',
-                '  N5954W'
-            ];
-            // current rotation index (we start at the first word)
-            var index = 0;
-            // each 3 seconds we'll update the billboard
-            Tick.helper.interval(function(){
-                // get the word at the current index
-                tick.value = rotation[index];
-                // when we reach the end we start over at zero
-                index = index < rotation.length - 1 ? index + 1 : 0;
-            }, 5500);
-        }
-        function handleTickInit(tick) {
-            // words to show on billboard
-            var rotation = [
-                'Arrivals',
-                '  N21043'
-            ];
-            // current rotation index (we start at the first word)
-            var index = 0;
-            // each 3 seconds we'll update the billboard
-            Tick.helper.interval(function(){
-                // get the word at the current index
-                tick.value = rotation[index];
-                // when we reach the end we start over at zero
-                index = index < rotation.length - 1 ? index + 1 : 0;
-            }, 7000);
+    <script type="text/javascript" src="assets/jsjquery.transform-0.9.3.min.js"></script>
+    <script type="text/javascript" src="assets/jsjquery.flapper.js" ></script>
     
-        }
+    <script type="text/javascript">
+    <% 5.times do |n| %>
+    $('#arrival_<%= n %>').flapper(options).val("   N21043").change();
+    <% end %>
     </script>      
   </body>
 </html>
