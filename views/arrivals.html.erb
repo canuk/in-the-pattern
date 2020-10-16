@@ -16,43 +16,34 @@
     <link href="assets/css/application.css" rel="stylesheet" media="screen"> 
     <link href="assets/css/flip.min.css" rel="stylesheet">
   </head>
-  <body style="margin: 30px 10px 20px 10px">
+  <body style="margin: 40px 10px 20px 10px; background-color: black;">
     <main>
-      <div style="width: 100vw; min-width: 300px; max-width: 100%; text-align: center">
-        <div class="tick" data-value="ARRIVALS">
-          <div data-repeat="true" data-layout="horizontal fit">
-            <span data-view="flip"></span>
-          </div>
-        </div>             
-        <table class="table table-bordered table-striped">
-          <thead>
-          <tr>
-            <th>Tail Number</th>
-            <th>Arrival Time</th>
-          </tr>
-          </thead>
-          <tbody>
+      <div style="width: 100vw; min-width: 300px; max-width: 100%;">
+        <p class="text-center" style="color: yellow;font-size: 96px;margin-bottom: 0"><img src="/assets/img/arrival_icon.png" height="160" width="160"/> ARRIVALS</p>
+          <div id="newest_arrival"></div>      
           <% @arrivals.each do |arrival| %>
-          <tr>
-            <td><%= arrival.tail_number %></td>
-            <td><%= arrival.arrived_at.strftime("%H:%M") %></td>
-          </tr>
+            <div class="tick" data-value="  <%= arrival.tail_number %>">
+              <div data-repeat="true" data-layout="horizontal fit">
+                <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z0-9)" class="tick-char"></span>
+              </div>
+            </div>
+            <hr/>        
           <% end %>
-          </tbody>
-        </table>
-        <div class="tick" data-value="OVERHEAD">
-          <div data-repeat="true" data-layout="horizontal fit">
-            <span data-view="flip"></span>
+        <p class="text-center" style="color: yellow;font-size: 96px;margin-bottom: 0"><img src="/assets/img/departure_icon.png" height="160" width="160"/> DEPARTURES</p>   
+        
+        <% 4.times do %>
+        <div class="tick" data-value="12345678">
+          <div data-repeat="true" data-layout="horizontal fit" data-transform="upper -> split -> delay(random, 100, 150)">
+            <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z0-9)" class="tick-char"></span>
           </div>
-        </div> 
-        <hr/>
-        <span style="color: yellow">
+        </div>   
+        <hr/>  
+        <% end %>
         <div class="tick" data-value="12345678" data-did-init="updateOverhead">
           <div data-repeat="true" data-layout="horizontal fit" data-transform="upper -> split -> delay(random, 100, 150)">
             <span data-view="flip" data-transform="ascii -> arrive -> round -> char(a-zA-Z0-9)" class="tick-char"></span>
           </div>
-        </div>  
-        </span>       
+        </div>                                   
       </div>           
     </main>
     <script
@@ -69,6 +60,34 @@
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="assets/js/application.js"></script>
     <script type="text/javascript" src="assets/js/flip.min.js"></script>
+          <script type="text/javascript">
+            // create Tick Counter
+            $('#newest_arrival').tick('create', {
+                value: "        ",
+                view:
+                // definition for top level tick element
+                {
+                    children:[
+                        // presenter object
+                        {
+                            root: 'div',
+                            layout: 'horizontal fit',
+                            children: [
+                                // presenter object
+                                {
+                                    view: 'flip'
+                                },
+                                // presenter object
+                                {
+                                    view: 'line',
+                                    root: 'div'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });   
+          </script>     
     <script type="text/javascript" >
         function updateOverhead(tick) {
             // words to show on billboard
