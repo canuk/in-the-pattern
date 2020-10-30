@@ -15,14 +15,12 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link href="assets/css/application.css" rel="stylesheet" media="screen"> 
     <link href="assets/css/flip.min.css" rel="stylesheet">
-    <link href="assets/css/flapper.css" rel="stylesheet">
   </head>
   <body style="margin: 20px 10px 20px 10px; background-color: black; overflow: hidden">
     <main>
       <div style="width: 100vw; min-width: 300px; max-width: 100%;">
         <h1 class="text-center" style="white-space: nowrap;color: yellow;font-size: 64px;margin-bottom: 0"><img style="display: inline-block" src="/assets/img/arrival_icon.png" height="110" width="110"/> ARRIVALS</h1>
-          <div class="display  L" id="newest_arrival"></div>
-          <div class="tick" data-value="12345678" data-did-init="updateOverhead">
+          <div class="tick" data-value="12345678" data-did-init="updateArrival1">
             <div data-repeat="true" data-layout="horizontal fit" data-transform="upper -> split -> delay(random, 100, 150)">
               <span data-view="flip" data-transform="ascii -> arrive -> round -> char(A-Z0-9)" class="tick-char"></span>
             </div>
@@ -60,10 +58,17 @@
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="assets/js/application.js"></script>
     <script type="text/javascript" src="assets/js/flip.min.js"></script>
-    <script type="text/javascript" src="assets/js/jquery.flapper.js"></script>
-    <script type="text/javascript" src="assets/js/jquery.transform-0.9.3.min.js"></script>
-    <script type="text/javascript"> $('#newest_arrival').flapper({width: 8}).val('N21043').change(); </script>
-    <script type="text/javascript" >
+    <script type="text/javascript">
+      function updateArrival1(tick){
+        var scheme   = "ws://";
+        var uri      = scheme + window.document.location.host + "/";
+        var ws       = new WebSocket(uri);
+        ws.onmessage = function(message) {
+          // console.log(message)
+          var data = JSON.parse(message.data);
+          tick.value = data.who;
+        };   
+      }
         function updateOverhead(tick) {
             // words to show on billboard
             var rotation = [

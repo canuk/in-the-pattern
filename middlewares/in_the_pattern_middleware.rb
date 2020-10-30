@@ -38,10 +38,13 @@ module InThePattern
         if @settings.use_1090dump == true
           hostname = @settings.ip_1090dump #PiAware/1090Dump Device IP 192.168.0.137
           port = @settings.port_1090dump  #30003
+        elsif @settings.use_1090dump == false
+          hostname = @settings.ip_1090dump #PiAware/1090Dump Device IP 192.168.0.137
+          port = @settings.port_1090dump  #30003          
         end
         sock = TCPSocket.open(hostname, port)
         
-        overhead = JSON.parse(@airport.overhead)   #[[33.787192,-117.083074], [33.788048,-116.950208], [33.674409,-116.952611], [33.674695,-117.089941]]
+        overhead = JSON.parse(@airport.overhead)
         
         appch_rwy = @airport.approach_rwy.to_s
         dep_rwy = @airport.departure_rwy.to_s
@@ -49,13 +52,14 @@ module InThePattern
           system 'python3 /home/pi/in-the-pattern/oled/rwy.py -a '+ appch_rwy + ' -d ' + dep_rwy
         end
         
-        # KHMT Traffic Pattern
-        upwind = JSON.parse(@airport.upwind) #[[33.731881,-117.024530], [33.720102,-117.052339], [33.723814,-117.054914], [33.733451,-117.025646]]
-        crosswind = JSON.parse(@airport.crosswind) #[[33.711463,-117.049850], [33.715033,-117.040323], [33.723386,-117.043327], [33.720316,-117.054056]]
-        downwind = JSON.parse(@airport.downwind) #[[33.734815,-116.994328], [33.711605,-117.049946], [33.703894,-117.043423], [33.726883,-116.983342]]
-        base = JSON.parse(@airport.base) #[[33.739739,-117.004327], [33.742309,-116.998319], [33.734208,-116.994371], [33.732066,-117.000679]]
-        final = JSON.parse(@airport.final) #[[33.734574,-117.021013], [33.734003,-117.020712], [33.741488,-117.000894], [33.742345,-117.002182]]
-        
+        #Traffic Pattern
+        pattern_fence = Hash.new
+        @airport.upwind == nil ? pattern_fence["upwind"] = [] : pattern_fence["upwind"] = JSON.parse(@airport.upwind)
+        @airport.crosswind == nil ? pattern_fence["crosswind"] = [] : pattern_fence["crosswind"] = JSON.parse(@airport.crosswind)
+        @airport.downwind == nil ? pattern_fence["downwind"] = [] : pattern_fence["downwind"] = JSON.parse(@airport.downwind)
+        @airport.base == nil ? pattern_fence["base"] = [] : pattern_fence["base"] = JSON.parse(@airport.base)
+        @airport.final == nil ? pattern_fence["final"] = [] : pattern_fence["final"] = JSON.parse(@airport.final)
+                
         def inside?(vertices, test_point)
           vs = vertices + [vertices.first]
           xi, yi = vertices.reduce([0,0]) { |(sx,sy),(x,y)| [sx+x, sy+y] }.map { |e|
@@ -85,11 +89,30 @@ module InThePattern
         airplanes_on_final = Array.new
         airplanes_in_the_pattern = Array.new
         
+        # Initialize OLED pattern leg displays
         pattern_leg_array = ["upwind", "crosswind", "downwind", "base", "final"]
         if ENV['PI'] == "true"
           pattern_leg_array.each do |leg|
-            system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + leg.upcase.to_s
+            system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + leg.upcase.to_s
           end
+        end     
+        
+        def in_pattern_leg?(airplane)
+          n_number = airplane.reg.to_s
+          altitude = airplane.alt.to_i
+          if altitude.to_i <= TPA
+            pattern_leg_array.each do |pattern_leg|
+              if inside?(pattern_fence[pattern_leg], [airplane.lat, airplane.lon])            
+                airplanes_in_the_pattern |= [airplane.icao] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
+                puts "#{pattern_leg.upcase} - ID: #{n_number} ALT: #{altitude}"
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => n_number, :traffic_leg => "upwind", :altitude => alt.to_s}))
+                if ENV['PI'] == "true"
+                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg + ' -t ' + n_number
+                end
+                airplane_upwind[airplane.icao] = airplane
+              end
+            end
+          end   
         end        
         
         while (line = sock.gets.chomp) &&  (!exit_requested)
@@ -117,9 +140,9 @@ module InThePattern
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "UPWIND - ID:"+hexident+" ALT:"+alt
-                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "upwind", :altitude => alt.to_s}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "upwind", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l upwind -t ' + hexident.to_s
+                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l upwind -t ' + hexident.to_s
                 end
                 airplane_upwind[hexident] = airplane_info
               end
@@ -127,16 +150,16 @@ module InThePattern
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "CROSSWIND - ID:"+hexident+" ALT:"+alt
-                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "crosswind", :altitude => alt.to_s}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "crosswind", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l crosswind -t ' + hexident.to_s
+                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l crosswind -t ' + hexident.to_s
                 end
                 airplane_crosswind[hexident] = airplane_info
                 if airplane_upwind[hexident]
                   airplane_upwind.delete(hexident)
-                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "upwind", :altitude => ""}))
+                  @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "upwind", :altitude => ""}))
                   if ENV['PI'] == "true"
-                    system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l upwind -c leg'
+                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l upwind -c leg'
                   end
                 end
               end
@@ -144,16 +167,16 @@ module InThePattern
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "DOWNWIND - ID:"+hexident+" ALT:"+alt
-                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "downwind", :altitude => alt.to_s}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "downwind", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l downwind -t ' + hexident.to_s
+                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l downwind -t ' + hexident.to_s
                 end
                 airplane_downwind[hexident] = airplane_info
                 if airplane_crosswind[hexident]
                   airplane_crosswind.delete(hexident)
-                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "crosswind", :altitude => ""}))
+                  @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "crosswind", :altitude => ""}))
                   if ENV['PI'] == "true"
-                    system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l crosswind -c leg'
+                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l crosswind -c leg'
                   end
                 end
               end
@@ -161,16 +184,16 @@ module InThePattern
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "BASE - ID:"+hexident+" ALT:"+alt
-                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "base", :altitude => alt.to_s}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "base", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l base -t ' + hexident.to_s
+                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l base -t ' + hexident.to_s
                 end
                 airplane_base[hexident] = airplane_info
                 if airplane_downwind[hexident]
                   airplane_downwind.delete(hexident)
-                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "downwind", :altitude => ""}))
+                  @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "downwind", :altitude => ""}))
                   if ENV['PI'] == "true"
-                    system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l downwind -c leg'
+                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l downwind -c leg'
                   end
                 end
               end
@@ -179,23 +202,23 @@ module InThePattern
                 airplanes_on_final |= [hexident] # add ident to array if not already in there
                 puts "Airplanes on final: #{airplanes_on_final}"
                 puts "FINAL - ID:"+hexident+" ALT:"+alt
-                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "final", :altitude => alt.to_s}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "final", :altitude => alt.to_s}))
                 if ENV['PI'] == "true"
-                  system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l final -t ' + hexident.to_s
+                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l final -t ' + hexident.to_s
                 end
                 airplane_final[hexident] = airplane_info
                 if airplane_base[hexident]
                   airplane_base.delete(hexident)
-                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "base", :altitude => ""}))
+                  @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "base", :altitude => ""}))
                   if ENV['PI'] == "true"
-                   system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l base -c leg'
+                   system 'python3 /home/pi/in-the-pattern/oled/aip.py -l base -c leg'
                   end
                 end
               end
             elsif inside?(overhead, airplane_position)
               if alt.to_i > TPA + 500
                 puts "OVERHEAD - ID:"+hexident+" ALT:"+alt
-                @redis.publish(CHANNEL, JSON.generate({:who => hexident.to_s, :traffic_leg => "overhead", :altitude => alt.to_s}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "overhead", :altitude => alt.to_s}))
               end
             end    
         
@@ -212,9 +235,9 @@ module InThePattern
                   Arrival.find_or_create_by(airport_id: @airport.id, tail_number: aof, arrived_at: last_return) # find_or_create_by prevents creating duplicates... I think...
                   airplane_final.delete(aof) # Remove it from the airplane_final hash
                   airplanes_on_final.delete(aof) # remove it from the airplanes on final
-                @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "final", :altitude => ""}))
+                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "final", :altitude => ""}))
                 if ENV['PI'] == "true"
-                 system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l final -c leg'
+                 system 'python3 /home/pi/in-the-pattern/oled/aip.py -l final -c leg'
                 end            
               end
             end
@@ -229,18 +252,18 @@ module InThePattern
                 last_return = DateTime.strptime(airplane_upwind[a][6] + 'T' + airplane_upwind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
                 if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
                   airplane_upwind.delete(a)
-                  @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "upwind", :altitude => ""}))
+                  @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "upwind", :altitude => ""}))
                   if ENV['PI'] == "true"
-                   system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l upwind -c leg'
+                   system 'python3 /home/pi/in-the-pattern/oled/aip.py -l upwind -c leg'
                   end            
                 end
                 if airplane_crosswind[a]
                   last_return = DateTime.strptime(airplane_crosswind[a][6] + 'T' + airplane_crosswind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
                   if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
                     airplane_crosswind.delete(a)
-                    @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "crosswind", :altitude => ""}))
+                    @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "crosswind", :altitude => ""}))
                     if ENV['PI'] == "true"
-                     system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l crosswind -c leg'
+                     system 'python3 /home/pi/in-the-pattern/oled/aip.py -l crosswind -c leg'
                     end            
                   end
                 end
@@ -248,9 +271,9 @@ module InThePattern
                   last_return = DateTime.strptime(airplane_downwind[a][6] + 'T' + airplane_downwind[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
                   if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
                     airplane_downwind.delete(a)
-                    @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "downwind", :altitude => ""}))
+                    @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "downwind", :altitude => ""}))
                     if ENV['PI'] == "true"
-                     system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l downwind -c leg'
+                     system 'python3 /home/pi/in-the-pattern/oled/aip.py -l downwind -c leg'
                     end            
                   end
                 end
@@ -258,9 +281,9 @@ module InThePattern
                   last_return = DateTime.strptime(airplane_base[a][6] + 'T' + airplane_base[a][7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
                   if five_seconds_ago > Time.parse(last_return.to_s)  # is older than 10 seconds
                     airplane_base.delete(a)
-                    @redis.publish(CHANNEL, JSON.generate({:who => "", :traffic_leg => "base", :altitude => ""}))
+                    @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => "", :traffic_leg => "base", :altitude => ""}))
                     if ENV['PI'] == "true"
-                     system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l base -c leg'
+                     system 'python3 /home/pi/in-the-pattern/oled/aip.py -l base -c leg'
                     end            
                   end
                 end                
@@ -270,11 +293,11 @@ module InThePattern
         end
 
         if ENV['PI'] == "true"
-          system 'python3 python3 /home/pi/in-the-pattern/oled/aip.py -l final -c all' # clear the pattern
+          system 'python3 /home/pi/in-the-pattern/oled/aip.py -l final -c all' # clear the pattern
         end
         sock.close               # Close the socket when done     
     
-      end
+      end #Thread
     end
 
     def call(env)

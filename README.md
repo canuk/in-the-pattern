@@ -1,6 +1,6 @@
 # In The Pattern
 
-A cool website that connects to your local [PiAware](https://flightaware.com/adsb/piaware/build) or [Dump1090](https://github.com/antirez/dump1090) you can see in real-time who is in your local traffic pattern.
+A webserver that connects to your local [PiAware](https://flightaware.com/adsb/piaware/build) or [Dump1090](https://github.com/antirez/dump1090) you can see in real-time who is in your local traffic pattern.
 
 You can also build a cool wall installation. Check it out [here](https://www.inthepattern.net).
 
@@ -17,7 +17,8 @@ To install all the dependencies, run:
 $ bundle install
 ```
 
-Copy `.env.sample` to `.env` to get started.
+Copy `env.sample` to `.env` to get started.
+`cp env.sample .env`
 
 Boot the app with foreman.
 
@@ -27,15 +28,15 @@ $ foreman start
 
 Visit <http://localhost:5000> to see the application.
 
-## On the Raspberry Pi
-Grab a Raspbian Lite Image
-Setup CLI/Autologin
-Setup Wifi
-Setup Interfacing Options: SSH, I2C
-Setup Timezone, Locale, Keyboard
-`sudo nano /boot/config.txt`
-Add this to the bottom of the file to Rotate Display 90 deg
-`display_rotate=1`
+## How to Set up your Raspberry Pi
+ - Grab a Raspbian Lite Image (Tested with Buster)
+ - Setup CLI/Autologin
+ - Setup WiFi Network
+ - Setup Interfacing Options: SSH, I2C
+ - Setup Timezone, Locale, Keyboard
+ 
+Copy our Config.txt file over.
+`sudo cp rpi/system_files/config.txt /boot/config.txt` (Will rotate display and set up the proper size)
 
 Install git and Ruby (Python3 is already on the Lite Image)
 ```

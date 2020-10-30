@@ -4,5 +4,7 @@ var ws       = new WebSocket(uri);
 ws.onmessage = function(message) {
   console.log(message)
   var data = JSON.parse(message.data);
-  $("#"+data.traffic_leg).html(data.who + " - Alt: " + data.altitude);
+  if( data.pattern_location === "traffic_pattern") {
+    $("#"+data.traffic_leg).html(data.who + " - Alt: " + data.altitude);  
+  }
 };
