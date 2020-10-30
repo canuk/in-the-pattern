@@ -13,8 +13,8 @@ i2c = busio.I2C(board.SCL, board.SDA)
 # Create the TCA9548A object and give it the I2C bus
 tca = adafruit_tca9548a.TCA9548A(i2c)
 
-rwy_font = ImageFont.truetype('16x8pxl-mono.ttf', 72)
-tail_font = ImageFont.truetype('16x8pxl-mono.ttf', 38)
+rwy_font = ImageFont.truetype('/home/pi/in-the-pattern/oled/16x8pxl-mono.ttf', 72)
+tail_font = ImageFont.truetype('/home/pi/in-the-pattern/oled/16x8pxl-mono.ttf', 38)
 
 
 # multiplexer index for each OLED
