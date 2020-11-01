@@ -37,14 +37,23 @@ module InThePattern
       
       @settings = Setting.first
       @settings.airport_id = params[:airport_id].to_i
-      @settings.airport_id = params[:use_1090dump]
-      @settings.airport_id = params[:ip_1090dump]
-      @settings.airport_id = params[:port_1090dump]
-      @settings.airport_id = params[:adsbx_api_key]
+      if params[:use_1090dump].blank? 
+        @settings.use_1090dump = false
+      else
+        @settings.use_1090dump = true
+      end
+      @settings.ip_1090dump = params[:ip_1090dump]
+      @settings.port_1090dump = params[:port_1090dump]
+      @settings.adsbx_api_key = params[:adsbx_api_key]
       @settings.updated_at = Time.now
       @settings.save!
             
       erb :"settings.html"
+    end
+    
+    get "/airports" do
+      @airports = Airport.all
+      erb :"airports.html"
     end
 
     get "/assets/js/application.js" do
