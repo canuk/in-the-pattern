@@ -19,11 +19,32 @@ module InThePattern
       @settings = Setting.first
       @airport = Airport.find(@settings.airport_id)
       @arrivals = Arrival.order(arrived_at: :desc).limit(4)
-      erb :"arrivals.html"
+      erb :"arrivals.html", layout: false
     end
     
     get "/geofence" do
       erb :"geofence.html"
+    end
+    
+    get "/settings" do
+      @settings = Setting.first
+      @airports = Airport.all
+      erb :"settings.html"
+    end
+    
+    post "/settings" do
+      @airports = Airport.all
+      
+      @settings = Setting.first
+      @settings.airport_id = params[:airport_id].to_i
+      @settings.airport_id = params[:use_1090dump]
+      @settings.airport_id = params[:ip_1090dump]
+      @settings.airport_id = params[:port_1090dump]
+      @settings.airport_id = params[:adsbx_api_key]
+      @settings.updated_at = Time.now
+      @settings.save!
+            
+      erb :"settings.html"
     end
 
     get "/assets/js/application.js" do

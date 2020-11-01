@@ -143,5 +143,15 @@ sudo cp asplashscreen.service /etc/systemd/system/asplashscreen.service
 sudo systemctl enable asplashscreen.service
 ```
 
+Install mDNS (to access the Pi using Bonjour)
+```
+sudo apt-get install avahi-daemon
+```
 
+Now change the hostname (change `raspberrypi` to `inthepattern`)
+```
+sudo nano /etc/hosts
+sudo nano /etc/hostname
+```
+Now you can access the server at http://inthepattern.local:5000
 (c) 2020 Reuben Thiessen

@@ -91,9 +91,15 @@ module InThePattern
         
         # Initialize OLED pattern leg displays
         pattern_leg_array = ["upwind", "crosswind", "downwind", "base", "final"]
+        welcome_message = Hash.new
+        welcome_message["upwind"] = "UPWIND"
+        welcome_message["crosswind"] = "XWIND"
+        welcome_message["downwind"] = "DNWIND"
+        welcome_message["base"] = "BASE"
+        welcome_message["final"] = "FINAL"
         if ENV['PI'] == "true"
           pattern_leg_array.each do |leg|
-            system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + leg.upcase.to_s
+            system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + welcome_message[leg]
           end
         end     
         
@@ -136,7 +142,7 @@ module InThePattern
             # Figure out if airplane is in the traffic pattern, and where it is
             # If it's in the next leg, remove it from the previous leg hash
             # airplane info should include identifier, etc.
-            if inside?(upwind, airplane_position)
+            if inside?(pattern_fence["upwind"], airplane_position)
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "UPWIND - ID:"+hexident+" ALT:"+alt
@@ -146,7 +152,7 @@ module InThePattern
                 end
                 airplane_upwind[hexident] = airplane_info
               end
-            elsif inside?(crosswind, airplane_position)
+            elsif inside?(pattern_fence["crosswind"], airplane_position)
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "CROSSWIND - ID:"+hexident+" ALT:"+alt
@@ -163,7 +169,7 @@ module InThePattern
                   end
                 end
               end
-            elsif inside?(downwind, airplane_position)
+            elsif inside?(pattern_fence["downwind"], airplane_position)
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "DOWNWIND - ID:"+hexident+" ALT:"+alt
@@ -180,7 +186,7 @@ module InThePattern
                   end
                 end
               end
-            elsif inside?(base, airplane_position)
+            elsif inside?(pattern_fence["base"], airplane_position)
               if alt.to_i < TPA
                 airplanes_in_the_pattern |= [hexident] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
                 puts "BASE - ID:"+hexident+" ALT:"+alt
@@ -197,7 +203,7 @@ module InThePattern
                   end
                 end
               end
-            elsif inside?(final, airplane_position)
+            elsif inside?(pattern_fence["final"], airplane_position)
               if alt.to_i < TPA
                 airplanes_on_final |= [hexident] # add ident to array if not already in there
                 puts "Airplanes on final: #{airplanes_on_final}"

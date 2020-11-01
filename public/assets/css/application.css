@@ -1,3 +1,74 @@
+@font-face {
+  font-family: "16x8PxlMono";
+  src: url("/assets/fonts/16x8pxl-mono.eot"); /* IE9 Compat Modes */
+  src: url("/assets/fonts/16x8pxl-mono.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+    url("/assets/fonts/16x8pxl-mono.otf") format("opentype"), /* Open Type Font */
+    url("/assets/fonts/16x8pxl-mono.svg") format("svg"), /* Legacy iOS */
+    url("/assets/fonts/16x8pxl-mono.ttf") format("truetype"), /* Safari, Android, iOS */
+    url("/assets/fonts/16x8pxl-mono.woff") format("woff"), /* Modern Browsers */
+    url("/assets/fonts/16x8pxl-mono.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "BungeeInline-Regular";
+  src: url("/assets/fonts/BungeeInline-Regular.eot"); /* IE9 Compat Modes */
+  src: url("/assets/fonts/BungeeInline-Regular.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+    url("/assets/fonts/BungeeInline-Regular.otf") format("opentype"), /* Open Type Font */
+    url("/assets/fonts/BungeeInline-Regular.svg") format("svg"), /* Legacy iOS */
+    url("/assets/fonts/BungeeInline-Regular.ttf") format("truetype"), /* Safari, Android, iOS */
+    url("/assets/fonts/BungeeInline-Regular.woff") format("woff"), /* Modern Browsers */
+    url("/assets/fonts/BungeeInline-Regular.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}
+
+.logo_font {
+  font-family: 'Bungee Inline', cursive; 
+}
+.pattern_leg_font {
+  font-family: '16x8PxlMono';
+}
+.runway_number_font {
+  font-family: '16x8PxlMono';
+}
+
+.end_legs {
+  width: 90px;
+  height: 90px;
+  -webkit-transform: rotate(270deg);
+  -moz-transform: rotate(270deg);
+  -o-transform: rotate(270deg);
+  transform: rotate(270deg);        
+}
+.approach_rwy_num {
+  float: right;
+  position: relative;
+  display: inline-block;
+  -webkit-transform: rotate(270deg);
+  -moz-transform: rotate(270deg);
+  -o-transform: rotate(270deg);
+  transform: rotate(270deg);         
+}
+.departure_rwy_num {
+  float: left;
+  position: relative;
+  display: inline-block;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);        
+}
+
+body {
+  padding-top: 5rem;
+}
+#map {
+  height: 600px;  
+  width: 100%;
+}
+
 .tick {
   font-size:1rem; white-space:nowrap; font-family:arial,sans-serif;
 }
@@ -24,10 +95,6 @@
 
 .tick-group {
   margin:0 .5em;text-align:center;
-}
-
-body {
-   background-color: #000 !important; 
 }
 
 .tick-text-inline {
