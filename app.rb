@@ -3,6 +3,7 @@ require "sinatra/activerecord"
 
 require_relative "models/airport.rb"
 require_relative "models/arrival.rb"
+require_relative "models/departure.rb"
 require_relative "models/setting.rb"
 
 module InThePattern
@@ -53,8 +54,28 @@ module InThePattern
     
     get "/airports" do
       @airports = Airport.all
-      erb :"airports.html"
+      erb :"airports/index.html"
     end
+    
+    get "/airports/new" do
+      @airport = Airport.new
+      erb :"airports/new.html"
+    end 
+    
+    post "/airports/create" do
+      
+      erb :"airports/show.html"
+    end     
+    
+    get "/airports/edit/:id" do
+      @airport = Airport.find(params[:id])
+      erb :"airports/new.html"
+    end  
+    
+    post "/airports/update" do
+      
+      erb :"airports/show.html"
+    end           
 
     get "/assets/js/application.js" do
       content_type :js

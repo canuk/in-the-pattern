@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 2020_10_20_051649) do
     t.string "final"
     t.integer "approach_rwy"
     t.integer "departure_rwy"
+    t.boolean "left_pattern", default: true
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -36,13 +37,20 @@ ActiveRecord::Schema.define(version: 2020_10_20_051649) do
     t.datetime "arrived_at"
   end
 
+  create_table "departures", force: :cascade do |t|
+    t.integer "airport_id"
+    t.string "tail_number"
+    t.string "aircraft_type"
+    t.datetime "departed_at"
+  end
+
   create_table "settings", force: :cascade do |t|
     t.integer "airport_id"
     t.boolean "use_1090dump"
     t.string "ip_1090dump"
     t.integer "port_1090dump"
-    t.datetime "updated_at"
     t.string "adsbx_api_key"
+    t.datetime "updated_at"
   end
 
 end

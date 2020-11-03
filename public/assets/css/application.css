@@ -61,9 +61,6 @@
   transform: rotate(90deg);        
 }
 
-body {
-  padding-top: 5rem;
-}
 #map {
   height: 600px;  
   width: 100%;

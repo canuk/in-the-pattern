@@ -5,6 +5,7 @@ class CreateSettings < ActiveRecord::Migration[6.0]
       t.boolean :use_1090dump
       t.string :ip_1090dump
       t.integer :port_1090dump
+      t.string :adsbx_api_key
       t.datetime :updated_at
     end
   end

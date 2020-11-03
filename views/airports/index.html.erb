@@ -1,0 +1,27 @@
+<main role="main" class="container">
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Identifier</th>
+        <th>Appch Rwy</th>
+        <th>Dep Rwy</th>
+        <th colspan="3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @airports.each do |airport| %>
+      <tr>
+        <td><%= airport.name %></td>
+        <td><%= airport.identifier %></td>
+        <td><%= airport.approach_rwy %></td>
+        <td><%= airport.departure_rwy %></td>
+        <td>Show</td>
+        <td>Edit</td>
+        <td>Del</td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
+</main>
+      

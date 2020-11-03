@@ -10,6 +10,7 @@ Airport.create(name: "Hemet-Ryan Airport",
                final: "[[33.734574,-117.021013], [33.734003,-117.020712], [33.741488,-117.000894], [33.742345,-117.002182]]", 
                approach_rwy: 23, 
                departure_rwy: 5, 
+               left_pattern: true,
                created_at: Time.now, 
                updated_at: Time.now)
   
@@ -18,3 +19,13 @@ Setting.create(airport_id: 1,
                ip_1090dump: '192.168.0.137',
                port_1090dump: 30003,
                updated_at: Time.now)
+               
+Arrival.create(airport_id: 1, 
+               tail_number: 'N182DV', 
+               aircraft_type: 'C182',
+               arrived_at: Time.now - 1.hour) 
+               
+Departure.create(airport_id: 1, 
+               tail_number: 'N182DV', 
+               aircraft_type: 'C182',
+               departed_at: Time.now)                              

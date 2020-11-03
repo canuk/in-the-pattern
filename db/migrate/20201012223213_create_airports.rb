@@ -13,6 +13,7 @@ class CreateAirports < ActiveRecord::Migration[6.0]
       t.string :final
       t.integer :approach_rwy
       t.integer :departure_rwy
+      t.boolean :left_pattern, default: true
       t.datetime :created_at
       t.datetime :updated_at
     end

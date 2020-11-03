@@ -1,5 +1,5 @@
 [Unit]
-Description=InThePattern Sinatra Server
+Description=InThePattern Server
 After=network.target
 
 [Service]
