@@ -1,56 +1,61 @@
   <main role="main" class="container">
-    <form method="POST" action="/airports/create">
+    <form method="POST" action="/airports/update">
     <div class="card">
       <h4 class="card-header logo_font">EDIT AIRPORT</h4>
       <div class="card-body">  
+        <input type="hidden" value="<%= @airport.id %>" name="id" />
         <div class="form-group">
           <label for="name">Name</label>
-          <input type="text" class="form-control" id="name" name="name" />
+          <input type="text" class="form-control" id="name" name="name" value="<%= @airport.name %>"/>
         </div>
         <div class="form-group">
           <label for="identifier">Identifier</label>
-          <input type="text" class="form-control" id="identifier" name="identifier" />
+          <input type="text" class="form-control" id="identifier" name="identifier" value="<%= @airport.identifier %>" />
         </div>
         <div class="form-group">
           <label for="lat">Latitude</label>
-          <input type="text" class="form-control" id="lat" name="lat" />
+          <input type="text" class="form-control" id="lat" name="lat" value="<%= @airport.lat %>" />
         </div>
         <div class="form-group">
           <label for="lng">Longitude</label>
-          <input type="text" class="form-control" id="lng" name="lng" />
+          <input type="text" class="form-control" id="lng" name="lng" value="<%= @airport.lng %>" />
         </div>
         <div class="form-group">
           <label for="overhead">Overhead</label>
-          <input type="text" class="form-control" id="overhead" name="overhead" />
+          <input type="text" class="form-control" id="overhead" name="overhead" value="<%= @airport.overhead %>" />
         </div> 
         <div class="form-group">
           <label for="upwind">Upwind</label>
-          <input type="text" class="form-control" id="upwind" name="upwind" />
+          <input type="text" class="form-control" id="upwind" name="upwind" value="<%= @airport.upwind %>" />
         </div>
         <div class="form-group">
           <label for="crosswind">Crosswind</label>
-          <input type="text" class="form-control" id="crosswind" name="crosswind" />
+          <input type="text" class="form-control" id="crosswind" name="crosswind" value="<%= @airport.crosswind %>" />
         </div> 
         <div class="form-group">
           <label for="downwind">Downwind</label>
-          <input type="text" class="form-control" id="downwind" name="downwind" />
+          <input type="text" class="form-control" id="downwind" name="downwind" value="<%= @airport.downwind %>" />
         </div> 
         <div class="form-group">
           <label for="Base">Base</label>
-          <input type="text" class="form-control" id="base" name="base" />
+          <input type="text" class="form-control" id="base" name="base" value="<%= @airport.base %>" />
         </div> 
         <div class="form-group">
           <label for="final">Final</label>
-          <input type="text" class="form-control" id="final" name="final" />
+          <input type="text" class="form-control" id="final" name="final" value="<%= @airport.final %>" />
         </div>
         <div class="form-group">
           <label for="approach_rwy">Approach Runway</label>
-          <input type="text" class="form-control" id="approach_rwy" name="approach_rwy" />
+          <input type="text" class="form-control" id="approach_rwy" name="approach_rwy" value="<%= @airport.approach_rwy %>" />
         </div>
         <div class="form-group">
           <label for="departure_rwy">Departure Runway</label>
-          <input type="text" class="form-control" id="departure_rwy" name="departure_rwy" />
-        </div>                                                                                
+          <input type="text" class="form-control" id="departure_rwy" name="departure_rwy" value="<%= @airport.departure_rwy %>" />
+        </div>  
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="left_pattern" name="left_pattern" <%= @airport.left_pattern ? "checked" : "" %>/>
+          <label class="form-check-label" for="left_pattern">Left Pattern?</label>
+        </div>                                                                                      
       </div>
       <div class="card-footer">
         <button type="submit" class="btn btn-primary">Submit</button>

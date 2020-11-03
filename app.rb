@@ -69,11 +69,31 @@ module InThePattern
     
     get "/airports/edit/:id" do
       @airport = Airport.find(params[:id])
-      erb :"airports/new.html"
+      erb :"airports/edit.html"
     end  
     
     post "/airports/update" do
-      
+      @airport = Airport.find(params[:id]) 
+      @airport.name = params[:name]
+      @airport.name = params[:identifier]
+      @airport.name = params[:lat]
+      @airport.name = params[:lng]
+      @airport.name = params[:overhead]
+      @airport.name = params[:upwind]
+      @airport.name = params[:crosswind]
+      @airport.name = params[:downwind]
+      @airport.name = params[:base]
+      @airport.name = params[:final]
+      @airport.name = params[:approach_rwy]
+      @airport.name = params[:departure_rwy]
+      if params[:left_pattern].blank? 
+        @airport.left_pattern = false
+      else
+        @airport.left_pattern = true
+      end   
+      @airpo      
+      @airport.updated_at = Time.now
+      @airport.save!      
       erb :"airports/show.html"
     end           
 

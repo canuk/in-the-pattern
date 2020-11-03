@@ -54,11 +54,19 @@ module InThePattern
         
         #Traffic Pattern
         pattern_fence = Hash.new
-        @airport.upwind == nil ? pattern_fence["upwind"] = [] : pattern_fence["upwind"] = JSON.parse(@airport.upwind)
-        @airport.crosswind == nil ? pattern_fence["crosswind"] = [] : pattern_fence["crosswind"] = JSON.parse(@airport.crosswind)
         @airport.downwind == nil ? pattern_fence["downwind"] = [] : pattern_fence["downwind"] = JSON.parse(@airport.downwind)
-        @airport.base == nil ? pattern_fence["base"] = [] : pattern_fence["base"] = JSON.parse(@airport.base)
-        @airport.final == nil ? pattern_fence["final"] = [] : pattern_fence["final"] = JSON.parse(@airport.final)
+        # Swap for Right Patterns
+        if @airport.left_pattern
+          @airport.upwind == nil ? pattern_fence["upwind"] = [] : pattern_fence["upwind"] = JSON.parse(@airport.upwind)
+          @airport.crosswind == nil ? pattern_fence["crosswind"] = [] : pattern_fence["crosswind"] = JSON.parse(@airport.crosswind)          
+          @airport.base == nil ? pattern_fence["base"] = [] : pattern_fence["base"] = JSON.parse(@airport.base)
+          @airport.final == nil ? pattern_fence["final"] = [] : pattern_fence["final"] = JSON.parse(@airport.final)
+        else # its a Right Pattern, so everything is "backwards" since we have all the variables in the code hard-wired for Left (standard) patterns
+          @airport.upwind == nil ? pattern_fence["final"] = [] : pattern_fence["final"] = JSON.parse(@airport.upwind)
+          @airport.crosswind == nil ? pattern_fence["base"] = [] : pattern_fence["base"] = JSON.parse(@airport.crosswind)
+          @airport.base == nil ? pattern_fence["crosswind"] = [] : pattern_fence["crosswind"] = JSON.parse(@airport.base)
+          @airport.final == nil ? pattern_fence["upwind"] = [] : pattern_fence["upwind"] = JSON.parse(@airport.final)          
+        end
                 
         def inside?(vertices, test_point)
           vs = vertices + [vertices.first]
@@ -79,24 +87,23 @@ module InThePattern
           s = (y1-y0).to_f/(x1-x0)
           [y0-s*x0, s]
         end
-        
-        airplane_upwind = Hash.new
-        airplane_crosswind = Hash.new
-        airplane_downwind = Hash.new
-        airplane_base = Hash.new
-        airplane_final = Hash.new
-        
-        airplanes_on_final = Array.new
-        airplanes_in_the_pattern = Array.new
-        
+                
         # Initialize OLED pattern leg displays
         pattern_leg_array = ["upwind", "crosswind", "downwind", "base", "final"]
         welcome_message = Hash.new
-        welcome_message["upwind"] = "UPWIND"
-        welcome_message["crosswind"] = "XWIND"
-        welcome_message["downwind"] = "DNWIND"
-        welcome_message["base"] = "BASE"
-        welcome_message["final"] = "FINAL"
+        if @airport.left_pattern
+          welcome_message["upwind"] = "UPWIND"
+          welcome_message["crosswind"] = "XWIND"
+          welcome_message["downwind"] = "DNWIND"
+          welcome_message["base"] = "BASE"
+          welcome_message["final"] = "FINAL"
+        else
+          welcome_message["upwind"] = "FINAL"
+          welcome_message["crosswind"] = "BASE"
+          welcome_message["downwind"] = "DNWIND"
+          welcome_message["base"] = "XWIND"
+          welcome_message["final"] = "UPWIND"  
+        end        
         if ENV['PI'] == "true"
           pattern_leg_array.each do |leg|
             system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + welcome_message[leg]
@@ -108,25 +115,7 @@ module InThePattern
         pattern_leg_array.each do |leg|
           current_pattern[leg] = Hash.new
         end
-        
-        def in_pattern_leg?(airplane)
-          n_number = airplane.reg.to_s
-          altitude = airplane.alt.to_i
-          if altitude.to_i <= TPA
-            pattern_leg_array.each do |pattern_leg|
-              if inside?(pattern_fence[pattern_leg], [airplane.lat, airplane.lon])            
-                airplanes_in_the_pattern |= [airplane.icao] # add the airplane to the array we'll check later if they need to be removed from the pattern leg
-                puts "#{pattern_leg.upcase} - ID: #{n_number} ALT: #{altitude}"
-                @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => n_number, :traffic_leg => "upwind", :altitude => alt.to_s}))
-                if ENV['PI'] == "true"
-                  system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg + ' -t ' + n_number
-                end
-                airplane_upwind[airplane.icao] = airplane
-              end
-            end
-          end   
-        end        
-        
+
         while (line = sock.gets.chomp) &&  (!exit_requested)
          
         #read next line from the socket - Ruby uses LF = \n to detect newline
@@ -147,29 +136,33 @@ module InThePattern
             airplane["position"] = [fields[14].to_f,fields[15].to_f]
             airplane["alt"] = fields[11].to_s
             airplane["last_seen"] = DateTime.strptime(fields[6] + 'T' + fields[7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+            
+            # see if any airplanes in the pattern need to be removed.
+            # If the last timestamp was more than 2 minutes ago, then remove it.
+            pattern_leg_array.each do |leg|
+              if !current_pattern[leg].blank?
+                if current_pattern[leg]["last_seen"] >= Time.now - 120 # 120 seconds = 2 minutes
+                  if leg == "final"
+                    # insert into arrivals database
+                    Arrival.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], arrived_at: current_pattern[leg]["last_seen"])
+                  elsif leg == "upwind"
+                    # insert into departures database
+                    Departure.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], departed_at: current_pattern[leg]["last_seen"])
+                  end 
+                  # Clear the the airplane from the pattern leg it was in
+                  current_pattern[leg] = nil
+                  # ... and clear the OLED
+                  if ENV['PI'] == "true"
+                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -c leg'
+                  end                     
+                end
+              end 
+            end           
             # Figure out if airplane is in the traffic pattern, and where it is
             # If it's in the next leg, remove it from the previous leg hash
             # airplane info should include identifier, etc.
-            if !airplane["alt"].blank? && airplane["alt"].to_i <= TPA # Don't even bother if not at or below TPA
-              pattern_leg_array.each do |leg|
-                # see if any airplanes in the pattern need to be removed.
-                # If the last timestamp was more than 2 minutes ago, then remove it.
-                if !current_pattern[leg].blank?
-                  if current_pattern[leg]["last_seen"] >= Time.now - 120 # 120 seconds = 2 minutes
-                    if leg == "final"
-                      # insert into arrivals database
-                      Arrival.find_or_create_by(airport_id: @airport.id, tail_number: airplane["n_number"], arrived_at: current_pattern[leg]["last_seen"])
-                    elsif leg == "upwind"
-                      # insert into departures database
-                      Departure.find_or_create_by(airport_id: @airport.id, tail_number: airplane["n_number"], departed_at: current_pattern[leg]["last_seen"])
-                    end 
-                    # Clear the current_airplane hash and clear the OLED
-                    current_pattern[leg] = nil
-                    if ENV['PI'] == "true"
-                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + " "
-                    end                     
-                  end
-                end
+            pattern_leg_array.each do |leg|
+              if !airplane["alt"].blank? && airplane["alt"].to_i <= TPA # Don't even bother if not at or below TPA
                 if inside?(pattern_fence[leg], airplane["position"])
                   if current_pattern[leg].blank? || current_pattern[leg]["n_number"] != airplane["n_number"]
                     current_pattern[leg] = airplane
