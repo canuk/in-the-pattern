@@ -161,10 +161,13 @@ module InThePattern
                       Arrival.find_or_create_by(airport_id: @airport.id, tail_number: airplane["n_number"], arrived_at: current_pattern[leg]["last_seen"])
                     elsif leg == "upwind"
                       # insert into departures database
-                      Departure.find_or_create_by(airport_id: @airport.id, tail_number: airplane["n_number"], arrived_at: current_pattern[leg]["last_seen"])
+                      Departure.find_or_create_by(airport_id: @airport.id, tail_number: airplane["n_number"], departed_at: current_pattern[leg]["last_seen"])
                     end 
-                    # Clear the current_airplane hash
+                    # Clear the current_airplane hash and clear the OLED
                     current_pattern[leg] = nil
+                    if ENV['PI'] == "true"
+                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + " "
+                    end                     
                   end
                 end
                 if inside?(pattern_fence[leg], airplane["position"])
@@ -177,7 +180,7 @@ module InThePattern
                   puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
                   @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
                   if ENV['PI'] == "true"
-                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg + ' -t ' + airplane["n_number"]
+                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
                   end    
                 end
               end
