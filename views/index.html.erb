@@ -5,7 +5,7 @@
   <table width="100%">
     <tr>
       <td width="25%"><span class="badge badge-light">Upwind</span> <div id="upwind"></div></td>
-      <td align="center" width="50%" style="background: #000; color: #FFF"><div class="departure_rwy_num">05</div> - - - - - - - - - - - - - - <span class="badge badge-secondary">KHMT</span> - - - - - - - - - - - - - - - - <div class="approach_rwy_num">23</div></td>
+      <td align="center" width="50%" style="background: #000; color: #FFF"><div class="departure_rwy_num"><%= @airport.departure_rwy %></div> - - - - - - - - - - - - - - <span class="badge badge-secondary"><%= @airport.identifier %></span> - - - - - - - - - - - - - - - - <div class="approach_rwy_num"><%= @airport.approach_rwy %></div></td>
       <td width="25%"><span class="badge badge-light">Final</span> <div id="final"></div></td>
     </tr>
     <tr>

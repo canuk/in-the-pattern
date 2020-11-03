@@ -13,6 +13,8 @@ module InThePattern
     set :database, {adapter: "sqlite3", database: "itp.sqlite3"}
     
     get "/" do
+      @settings = Setting.first
+      @airport = Airport.find(@settings.airport_id)
       erb :"index.html"
     end
     
@@ -22,6 +24,12 @@ module InThePattern
       @arrivals = Arrival.order(arrived_at: :desc).limit(4)
       erb :"arrivals.html", layout: false
     end
+    
+    get "/arrivals_and_departures" do
+      @arrivals = Arrival.all
+      @departures = Departure.all
+      erb :"arrivals_and_departures.html"
+    end    
     
     get "/geofence" do
       erb :"geofence.html"
@@ -57,14 +65,38 @@ module InThePattern
       erb :"airports/index.html"
     end
     
+    get "/airports/show/:id" do
+      @airport = Airport.find(params[:id]) 
+      erb :"airports/show.html"
+    end
+    
     get "/airports/new" do
-      @airport = Airport.new
       erb :"airports/new.html"
     end 
     
     post "/airports/create" do
-      
-      erb :"airports/show.html"
+      @airport = Airport.new 
+      @airport.name = params[:name]
+      @airport.identifier = params[:identifier].upcase
+      @airport.lat = params[:lat]
+      @airport.lng = params[:lng]
+      @airport.overhead = params[:overhead]
+      @airport.upwind = params[:upwind]
+      @airport.crosswind = params[:crosswind]
+      @airport.downwind = params[:downwind]
+      @airport.base = params[:base]
+      @airport.final = params[:final]
+      @airport.approach_rwy = params[:approach_rwy]
+      @airport.departure_rwy = params[:departure_rwy]
+      if params[:left_pattern].blank? 
+        @airport.left_pattern = false
+      else
+        @airport.left_pattern = true
+      end        
+      @airport.created_at = Time.now
+      @airport.updated_at = Time.now
+      @airport.save!      
+      redirect to "/airports/show/#{@airport.id}"      
     end     
     
     get "/airports/edit/:id" do
@@ -74,27 +106,26 @@ module InThePattern
     
     post "/airports/update" do
       @airport = Airport.find(params[:id]) 
-      @airport.name = params[:name]
-      @airport.name = params[:identifier]
-      @airport.name = params[:lat]
-      @airport.name = params[:lng]
-      @airport.name = params[:overhead]
-      @airport.name = params[:upwind]
-      @airport.name = params[:crosswind]
-      @airport.name = params[:downwind]
-      @airport.name = params[:base]
-      @airport.name = params[:final]
-      @airport.name = params[:approach_rwy]
-      @airport.name = params[:departure_rwy]
+      @airport.name = params[:name].chomp
+      @airport.identifier = params[:identifier].upcase.chomp
+      @airport.lat = params[:lat]
+      @airport.lng = params[:lng]
+      @airport.overhead = params[:overhead]
+      @airport.upwind = params[:upwind]
+      @airport.crosswind = params[:crosswind]
+      @airport.downwind = params[:downwind]
+      @airport.base = params[:base]
+      @airport.final = params[:final]
+      @airport.approach_rwy = params[:approach_rwy].chomp
+      @airport.departure_rwy = params[:departure_rwy].chomp
       if params[:left_pattern].blank? 
         @airport.left_pattern = false
       else
         @airport.left_pattern = true
-      end   
-      @airpo      
+      end        
       @airport.updated_at = Time.now
       @airport.save!      
-      erb :"airports/show.html"
+      redirect to "/airports/show/#{@airport.id}"
     end           
 
     get "/assets/js/application.js" do

@@ -1,4 +1,6 @@
 <main role="main" class="container">
+  <a href="/airports/new" class="btn btn-success">Create New Airport</a>
+  <br/><br/>
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -13,10 +15,10 @@
       <% @airports.each do |airport| %>
       <tr>
         <td><%= airport.name %></td>
-        <td><%= airport.identifier %></td>
-        <td><%= airport.approach_rwy %></td>
-        <td><%= airport.departure_rwy %></td>
-        <td>Show</td>
+        <td><span class="badge badge-primary"><%= airport.identifier %></span></td>
+        <td class="runway_number_font"><%= airport.approach_rwy %></td>
+        <td class="runway_number_font"><%= airport.departure_rwy %></td>
+        <td><a href="/airports/show/<%=airport.id%>">View</a></td>
         <td><a href="/airports/edit/<%=airport.id%>">Edit</a></td>
         <td>Del</td>
       </tr>

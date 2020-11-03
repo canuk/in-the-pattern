@@ -1,1 +1,16 @@
-<%= @airport.name %>
+<main role="main" class="container">
+  <div class="card">
+    <div class="card-body">
+      <h1><span class="badge badge-primary"><%= @airport.identifier %></span> <%= @airport.name %></h1>
+      <br/>
+      <table class="text-center">
+        <tr>
+          <td align="center" width="500" height="70" style="background: #000; color: #FFF"><h3><div class="departure_rwy_num runway_number_font"><%= @airport.departure_rwy.upcase.chomp %></div> - - - - - - - <span class="badge badge-secondary"><%= @airport.identifier.upcase %></span> - - - - - - - <div class="approach_rwy_num runway_number_font"><%= @airport.approach_rwy.upcase %></div></h3></td>
+        </tr>
+      </table>
+    </div>
+    <div class="card-footer">
+      <a class="btn btn-outline-secondary" href="/airports">Back</a>
+      <a class="btn btn-outline-primary" href="/airports/edit/<%= @airport.id %>">Edit</a>
+  </div>
+</main>

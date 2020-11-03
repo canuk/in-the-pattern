@@ -23,8 +23,8 @@ ActiveRecord::Schema.define(version: 2020_10_20_051649) do
     t.string "downwind"
     t.string "base"
     t.string "final"
-    t.integer "approach_rwy"
-    t.integer "departure_rwy"
+    t.string "approach_rwy"
+    t.string "departure_rwy"
     t.boolean "left_pattern", default: true
     t.datetime "created_at"
     t.datetime "updated_at"

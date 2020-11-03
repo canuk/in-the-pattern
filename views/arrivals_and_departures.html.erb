@@ -1,0 +1,49 @@
+<main role="main" class="container">
+  <h1 style="white-space: nowrap;font-size: 64px;margin-bottom: 0"><img style="display: inline-block" src="/assets/img/arrival_icon.png" height="110" width="110"/> ARRIVALS</h1>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Airport</th>
+        <th>Tail Number</th>
+        <th>Aircraft Type</th>
+        <th>Arrival Time</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody class="runway_number_font">
+      <% @arrivals.each do |arrival| %>
+      <tr>
+        <td><span style="font-family: 'Helvetica'";" class="badge badge-primary"><%= arrival.airport.identifier %></span></td>
+        <td><%= arrival.tail_number %></td>
+        <td><%= arrival.aircraft_type %></td>
+        <td class="runway_number_font"><%= arrival.arrived_at %></td>
+        <td>Del</td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <h1 style="white-space: nowrap;font-size: 64px;margin-bottom: 0"><img style="display: inline-block" src="/assets/img/departure_icon.png" height="110" width="110"/> DEPARTURES</h1>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Airport</th>
+        <th>Tail Number</th>
+        <th>Aircraft Type</th>
+        <th>Departure Time</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody class="runway_number_font">
+      <% @departures.each do |departure| %>
+      <tr>
+        <td><span style="font-family: 'Helvetica'";" class="badge badge-primary"><%= departure.airport.identifier %></span></td>
+        <td><%= departure.tail_number %></td>
+        <td><%= departure.aircraft_type %></td>
+        <td><%= departure.departed_at %></td>
+        <td>Del</td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>  
+</main>
+      

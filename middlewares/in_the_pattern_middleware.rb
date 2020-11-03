@@ -38,16 +38,22 @@ module InThePattern
         if @settings.use_1090dump == true
           hostname = @settings.ip_1090dump #PiAware/1090Dump Device IP 192.168.0.137
           port = @settings.port_1090dump  #30003
-        elsif @settings.use_1090dump == false
-          hostname = @settings.ip_1090dump #PiAware/1090Dump Device IP 192.168.0.137
-          port = @settings.port_1090dump  #30003          
+        elsif @settings.use_1090dump == false # so it doesn't fail, just keep using 1090dump
+          # eventually here we'll figure out what to do with ADSBExchange
+          hostname = @settings.ip_1090dump
+          port = @settings.port_1090dump          
         end
         sock = TCPSocket.open(hostname, port)
         
         overhead = JSON.parse(@airport.overhead)
         
-        appch_rwy = @airport.approach_rwy.to_s
-        dep_rwy = @airport.departure_rwy.to_s
+        if @airport.left_pattern
+          appch_rwy = @airport.approach_rwy.to_s
+          dep_rwy = @airport.departure_rwy.to_s
+        else
+          dep_rwy = @airport.approach_rwy.to_s
+          appch_rwy = @airport.departure_rwy.to_s
+        end
         if ENV['PI'] == "true"
           system 'python3 /home/pi/in-the-pattern/oled/rwy.py -a '+ appch_rwy + ' -d ' + dep_rwy
         end
@@ -141,7 +147,7 @@ module InThePattern
             # If the last timestamp was more than 2 minutes ago, then remove it.
             pattern_leg_array.each do |leg|
               if !current_pattern[leg].blank?
-                if current_pattern[leg]["last_seen"] >= Time.now - 120 # 120 seconds = 2 minutes
+                if current_pattern[leg]["last_seen"] <= Time.now - 120 # 120 seconds = 2 minutes
                   if leg == "final"
                     # insert into arrivals database
                     Arrival.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], arrived_at: current_pattern[leg]["last_seen"])
@@ -166,7 +172,8 @@ module InThePattern
                 if inside?(pattern_fence[leg], airplane["position"])
                   if current_pattern[leg].blank? || current_pattern[leg]["n_number"] != airplane["n_number"]
                     current_pattern[leg] = airplane
-                  elsif current_pattern[leg]["n_number"] == airplane["n_number"] #Its already logged in the hash, update the last seen
+                  #It's already logged in the hash, update the last seen
+                  elsif current_pattern[leg]["n_number"] == airplane["n_number"] 
                     current_pattern[leg]["last_seen"] = Time.now
                     puts current_pattern
                   end
