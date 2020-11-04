@@ -141,7 +141,7 @@ module InThePattern
         		lng = fields[15].to_f
             airplane["position"] = [fields[14].to_f,fields[15].to_f]
             airplane["alt"] = fields[11].to_s
-            airplane["last_seen"] = DateTime.strptime(fields[6] + 'T' + fields[7] + '-07:00', '%Y/%m/%dT%H:%M:%S.%L%z')
+            airplane["last_seen"] = Time.now
             
             # see if any airplanes in the pattern need to be removed.
             # If the last timestamp was more than 2 minutes ago, then remove it.
@@ -172,16 +172,16 @@ module InThePattern
                 if inside?(pattern_fence[leg], airplane["position"])
                   if current_pattern[leg].blank? || current_pattern[leg]["n_number"] != airplane["n_number"]
                     current_pattern[leg] = airplane
+                    puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
+                    @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
+                    if ENV['PI'] == "true"
+                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
+                    end                     
                   #It's already logged in the hash, update the last seen
                   elsif current_pattern[leg]["n_number"] == airplane["n_number"] 
                     current_pattern[leg]["last_seen"] = Time.now
                     puts current_pattern
-                  end
-                  puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
-                  @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
-                  if ENV['PI'] == "true"
-                    system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
-                  end    
+                  end   
                 end
               end
             end

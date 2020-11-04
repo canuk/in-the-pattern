@@ -51,6 +51,12 @@ sudo apt-get install --no-install-recommends chromium-browser
 
 ```
 
+Trying out Surf browser from Suckless because Chrome keeps wanting to upgrade to latest version
+OK, not what I was hoping for. There must be some way to remove the chrome and make the window fullscreen automatically...
+```
+sudo apt-get install surf
+```
+
 Install Python Libraries
 ```
 sudo apt install -y python3-dev
