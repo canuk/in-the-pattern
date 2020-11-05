@@ -1,5 +1,5 @@
 <main role="main" class="container">
-  <h1 style="white-space: nowrap;font-size: 64px;margin-bottom: 0"><img style="display: inline-block" src="/assets/img/arrival_icon.png" height="110" width="110"/> ARRIVALS</h1>
+  <h1 style="white-space: nowrap;font-size: 64px;margin-bottom: 0"><i class="fas fa-plane-arrival"></i> ARRIVALS</h1>
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -17,12 +17,17 @@
         <td><%= arrival.tail_number %></td>
         <td><%= arrival.aircraft_type %></td>
         <td class="runway_number_font"><%= arrival.arrived_at %></td>
-        <td>Del</td>
+        <td>
+          <form action="/arrivals/<%= arrival.id %>" method="post">
+          <input id="hidden" type="hidden" name="_method" value="delete">
+          <button type="submit" value="delete" class="btn btn-block btn-sm btn-link"><i class="text-danger fas fa-trash-alt"></i></button>
+          </form>
+        </td>
       </tr>
       <% end %>
     </tbody>
   </table>
-  <h1 style="white-space: nowrap;font-size: 64px;margin-bottom: 0"><img style="display: inline-block" src="/assets/img/departure_icon.png" height="110" width="110"/> DEPARTURES</h1>
+  <h1 style="white-space: nowrap;font-size: 64px;margin-bottom: 0"><i class="fas fa-plane-departure"></i> DEPARTURES</h1>
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -40,7 +45,12 @@
         <td><%= departure.tail_number %></td>
         <td><%= departure.aircraft_type %></td>
         <td><%= departure.departed_at %></td>
-        <td>Del</td>
+        <td>
+          <form action="/departures/<%= departure.id %>" method="post">
+          <input id="hidden" type="hidden" name="_method" value="delete">
+          <button type="submit" value="delete" class="btn btn-block btn-sm btn-link"><i class="text-danger fas fa-trash-alt"></i></button>
+          </form>
+        </td>
       </tr>
       <% end %>
     </tbody>

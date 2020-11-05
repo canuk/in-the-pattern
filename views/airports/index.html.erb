@@ -1,6 +1,5 @@
 <main role="main" class="container">
-  <a href="/airports/new" class="btn btn-success">Create New Airport</a>
-  <br/><br/>
+  <h1 class="logo_font">Airports <a href="/airports/new" class="btn btn-success"><i class="fas fa-plus"></i> Add Airport</a></h1>
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -18,9 +17,14 @@
         <td><span class="badge badge-primary"><%= airport.identifier %></span></td>
         <td class="runway_number_font"><%= airport.approach_rwy %></td>
         <td class="runway_number_font"><%= airport.departure_rwy %></td>
-        <td><a href="/airports/show/<%=airport.id%>">View</a></td>
-        <td><a href="/airports/edit/<%=airport.id%>">Edit</a></td>
-        <td>Del</td>
+        <td><a class="btn btn-block btn-sm btn-link" href="/airports/show/<%=airport.id%>"><i class="fas fa-eye"></i></a></td>
+        <td><a class="btn btn-block btn-sm btn-link" href="/airports/edit/<%=airport.id%>"><i class="fas fa-edit"></i></a></a></td>
+        <td>
+          <form action="/airports/<%= airport.id %>" method="post">
+          <input id="hidden" type="hidden" name="_method" value="delete">
+          <button type="submit" value="delete" class="btn btn-block btn-sm btn-link"><i class="text-danger fas fa-trash-alt"></i></button>
+          </form>
+        </td>
       </tr>
       <% end %>
     </tbody>

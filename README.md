@@ -159,5 +159,16 @@ Now change the hostname (change `raspberrypi` to `inthepattern`)
 sudo nano /etc/hosts
 sudo nano /etc/hostname
 ```
+
+Install nginx so we can access at inthepattern.local without a port number
+```
+sudo apt update
+sudo apt install -y nginx
+sudo rm /etc/nginxsites-enabled/default
+sudo cp rpi_system_files/nginx.sites-enabled.default /etc/nginxsites-enabled/default
+// Start on Boot
+sudo update-rc.d -f nginx defaults;
+```
+
 Now you can access the server at http://inthepattern.local:5000
 (c) 2020 Reuben Thiessen

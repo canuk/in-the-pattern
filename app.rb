@@ -10,6 +10,7 @@ require_relative "models/setting.rb"
 module InThePattern
   class App < Sinatra::Base
     register Sinatra::ActiveRecordExtension
+    use Rack::MethodOverride
     
     configure do
       enable :cross_origin
@@ -23,18 +24,30 @@ module InThePattern
       erb :"index.html"
     end
     
-    get "/arrivals" do
+    get "/status_board" do
       @settings = Setting.first
       @airport = Airport.find(@settings.airport_id)
       @arrivals = Arrival.order(arrived_at: :desc).limit(4)
-      erb :"arrivals.html", layout: false
+      erb :"status_board.html", layout: false
     end
     
     get "/arrivals_and_departures" do
-      @arrivals = Arrival.all
-      @departures = Departure.all
+      @arrivals = Arrival.order(arrived_at: :desc).limit(100)
+      @departures = Departure.order(departed_at: :desc).limit(100)
       erb :"arrivals_and_departures.html"
     end    
+    
+    delete "/arrivals/:id" do
+      @arrival = Arrival.find(params[:id])
+      @arrival.destroy
+      redirect "/arrivals_and_departures"
+    end
+    
+    delete "/departures/:id" do
+      @departure = Departure.find(params[:id])
+      @departure.destroy
+      redirect "/arrivals_and_departures"
+    end
     
     get "/geofence" do
       erb :"geofence.html"
@@ -66,9 +79,15 @@ module InThePattern
     end
     
     get "/airports" do
-      @airports = Airport.all
+      @airports = Airport.order(name: :asc).all
       erb :"airports/index.html"
     end
+    
+    delete "/airports/:id" do
+      @airport = Airport.find(params[:id])
+      @airport.destroy
+      redirect "/airports"
+    end    
     
     get "/airports/show/:id" do
       @airport = Airport.find(params[:id]) 

@@ -1,7 +1,7 @@
   <main role="main" class="container">
     <form method="POST" action="/airports/create">
     <div class="card">
-      <h4 class="card-header logo_font">CREATE AIRPORT</h4>
+      <h4 class="card-header logo_font"><i class="fas fa-map-marked-alt"></i> CREATE AIRPORT</h4>
       <div class="card-body">  
         <div class="form-group">
           <label for="name">Name</label>
@@ -11,6 +11,10 @@
           <label for="identifier">Identifier</label>
           <input type="text" class="form-control" id="identifier" name="identifier" />
         </div>
+        <div class="form-group">
+          <label for="identifier">Field Elevation</label>
+          <input type="text" class="form-control" id="identifier" name="field_elevation" />
+        </div>         
         <div class="form-group">
           <label for="lat">Latitude</label>
           <input type="text" class="form-control" id="lat" name="lat" />
