@@ -12,7 +12,6 @@ module InThePattern
   class InThePatternBackend
     KEEPALIVE_TIME = 1 # in seconds
     CHANNEL        = "in-the-pattern"
-    TPA = 3000 # I added 500 to it.
 
     def initialize(app)
       @app     = app
@@ -34,6 +33,7 @@ module InThePattern
         Kernel.trap( "INT" ) { exit_requested = true }
         
         @airport = Airport.find(@settings.airport_id)
+        @tpa = @airport.field_elevation + 1500
         
         if @settings.use_1090dump == true
           hostname = @settings.ip_1090dump #PiAware/1090Dump Device IP 192.168.0.137
@@ -47,6 +47,8 @@ module InThePattern
         
         overhead = JSON.parse(@airport.overhead)
         
+        # Runway Numbers
+        # Variables and Hashes are all "hardwired" for a Left (Standard) Pattern
         if @airport.left_pattern
           appch_rwy = @airport.approach_rwy.to_s
           dep_rwy = @airport.departure_rwy.to_s
@@ -61,7 +63,7 @@ module InThePattern
         #Traffic Pattern
         pattern_fence = Hash.new
         @airport.downwind == nil ? pattern_fence["downwind"] = [] : pattern_fence["downwind"] = JSON.parse(@airport.downwind)
-        # Swap for Right Patterns
+        # Variables and Hashes are all "hardwired" for a Left (Standard) Pattern
         if @airport.left_pattern
           @airport.upwind == nil ? pattern_fence["upwind"] = [] : pattern_fence["upwind"] = JSON.parse(@airport.upwind)
           @airport.crosswind == nil ? pattern_fence["crosswind"] = [] : pattern_fence["crosswind"] = JSON.parse(@airport.crosswind)          
@@ -147,7 +149,7 @@ module InThePattern
             # If the last timestamp was more than 2 minutes ago, then remove it.
             pattern_leg_array.each do |leg|
               if !current_pattern[leg].blank?
-                if current_pattern[leg]["last_seen"] <= Time.now - 120 # 120 seconds = 2 minutes
+                if current_pattern[leg]["last_seen"] <= Time.now - 20 # 120 seconds = 2 minutes
                   if leg == "final"
                     # insert into arrivals database
                     Arrival.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], arrived_at: current_pattern[leg]["last_seen"])
@@ -155,7 +157,7 @@ module InThePattern
                     # insert into departures database
                     Departure.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], departed_at: current_pattern[leg]["last_seen"])
                   end 
-                  # Clear the the airplane from the pattern leg it was in
+                  # Clear the the airplane from the pattern leg it was in (this will clear orphaned n_numbers when they fly through a pattern but don't go to the next leg)
                   current_pattern[leg] = nil
                   # ... and clear the OLED
                   if ENV['PI'] == "true"
@@ -167,8 +169,8 @@ module InThePattern
             # Figure out if airplane is in the traffic pattern, and where it is
             # If it's in the next leg, remove it from the previous leg hash
             # airplane info should include identifier, etc.
-            pattern_leg_array.each do |leg|
-              if !airplane["alt"].blank? && airplane["alt"].to_i <= TPA # Don't even bother if not at or below TPA
+            pattern_leg_array.each_with_index do |leg, idx|
+              if !airplane["alt"].blank? && airplane["alt"].to_i <= @tpa # Don't even bother if not at or below TPA
                 if inside?(pattern_fence[leg], airplane["position"])
                   if current_pattern[leg].blank? || current_pattern[leg]["n_number"] != airplane["n_number"]
                     current_pattern[leg] = airplane
@@ -176,6 +178,13 @@ module InThePattern
                     @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
                     if ENV['PI'] == "true"
                       system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
+                    end  
+                    # Now remove the airplane from previous leg
+                    if pattern_leg_array[idx-1]["n_number"] == airplane["n_number"]
+                      pattern_leg_array[idx-1] = nil
+                      if ENV['PI'] == "true"
+                        system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg_array[idx-1] + ' -c leg'
+                      end  
                     end                     
                   #It's already logged in the hash, update the last seen
                   elsif current_pattern[leg]["n_number"] == airplane["n_number"] 
@@ -186,7 +195,7 @@ module InThePattern
               end
             end
             # if inside?(overhead, airplane_position)
-            #   if alt.to_i > TPA + 500
+            #   if alt.to_i > @tpa + 500
             #     puts "OVERHEAD - ID:"+hexident+" ALT:"+alt
             #     @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => hexident.to_s, :traffic_leg => "overhead", :altitude => alt.to_s}))
             #   end

@@ -17,6 +17,7 @@ ActiveRecord::Schema.define(version: 2020_10_20_051649) do
     t.string "identifier"
     t.float "lat"
     t.float "lng"
+    t.integer "field_elevation"
     t.string "overhead"
     t.string "upwind"
     t.string "crosswind"

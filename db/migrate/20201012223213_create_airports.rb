@@ -5,6 +5,7 @@ class CreateAirports < ActiveRecord::Migration[6.0]
       t.string :identifier
       t.float :lat
       t.float :lng
+      t.integer :field_elevation
       t.string :overhead
       t.string :upwind
       t.string :crosswind
