@@ -35,7 +35,7 @@ Visit <http://localhost:5000> to see the application.
  - Setup Interfacing Options: SSH, I2C
  - Setup Timezone, Locale, Keyboard
  
-Copy our Config.txt file over.
+Copy ITP config.txt file over.
 `sudo cp rpi/system_files/config.txt /boot/config.txt` (Will rotate display and set up the proper size)
 
 Install git and Ruby (Python3 is already on the Lite Image)
@@ -44,11 +44,17 @@ sudo apt-get install -y git
 sudo apt-get install -y ruby-full
 ```
 
-Install x-windows so we can run a chromeless browser to display the arrivals [link](https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/)
+Install x-windows so we can run a lightweight browser to display the arrivals [link](https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/)
 ```
 sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox
-sudo apt-get install --no-install-recommends chromium-browser
-
+sudo apt-get install surf
+sudo rm /etc/xdg/openbox/autostart
+sudo cp rpi_system_files/openbox.autostart /etc/xdg/openbox/autostart
+# copy ITP openbox config file over so that Surf will start in fullscreen mode
+sudo rm /etc/xdg/openbox/rc.xml
+sudo cp rpi_system_files/openbox.rc.xml /etc/xdg/openbox/rc.xml
+# Now append to .bash_profile to start X automatically on boot.
+echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx -- -nocursor' >>~/.bash_profile
 ```
 
 Trying out Surf browser from Suckless because Chrome keeps wanting to upgrade to latest version
@@ -56,6 +62,13 @@ OK, not what I was hoping for. There must be some way to remove the chrome and m
 ```
 sudo apt-get install surf
 ```
+
+Trying out Midori, surf seems to overheat the pi
+https://maker-tutorials.com/en/auto-start-midori-browser-in-fullscreen-kiosk-modus-raspberry-pi-linux/#midori-full-screen-autostart
+
+sudo apt-get install -y midori matchbox
+sudo apt-get install -y unclutter
+
 
 Install Python Libraries
 ```

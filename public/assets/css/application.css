@@ -25,13 +25,13 @@
 }
 
 .logo_font {
-  font-family: 'Bungee Inline', cursive; 
+  font-family: 'BungeeInline-Regular', cursive; 
 }
 .pattern_leg_font {
-  font-family: '16x8PxlMono';
+  font-family: '16x8PxlMono', monospace;
 }
 .runway_number_font {
-  font-family: '16x8PxlMono';
+  font-family: '16x8PxlMono', monospace;
 }
 
 .end_legs {
