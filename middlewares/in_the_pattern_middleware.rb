@@ -146,16 +146,18 @@ module InThePattern
             airplane["last_seen"] = Time.now
             
             # see if any airplanes in the pattern need to be removed.
-            # If the last timestamp was more than 2 minutes ago, then remove it.
+            # If the last timestamp was more than 20 seconds, then remove it.
             pattern_leg_array.each do |leg|
               if !current_pattern[leg].blank?
-                if current_pattern[leg]["last_seen"] <= Time.now - 15 # 15 seconds
+                if current_pattern[leg]["last_seen"] <= Time.now - 20 # 20 seconds ago
                   if leg == "final"
                     # insert into arrivals database
                     Arrival.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], arrived_at: current_pattern[leg]["last_seen"])
+                    @redis.publish(CHANNEL, JSON.generate({:date_type => "arrival", :who => current_pattern[leg]["n_number"]}))
                   elsif leg == "upwind"
                     # insert into departures database
                     Departure.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], departed_at: current_pattern[leg]["last_seen"])
+                    @redis.publish(CHANNEL, JSON.generate({:date_type => "departure", :who => current_pattern[leg]["n_number"]}))
                   end 
                   # Clear the the airplane from the pattern leg it was in (this will clear orphaned n_numbers when they fly through a pattern but don't go to the next leg)
                   current_pattern[leg] = nil
@@ -179,9 +181,10 @@ module InThePattern
                     if ENV['PI'] == "true"
                       system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
                     end  
-                    # Now remove the airplane from previous leg
-                    if pattern_leg_array[idx-1]["n_number"] == airplane["n_number"]
-                      pattern_leg_array[idx-1] = nil
+                    # Now check to see if we need to remove the airplane from previous leg
+                    previous_leg = pattern_leg_array[idx-1]
+                    if current_pattern[previous_leg]["n_number"] == airplane["n_number"]
+                      current_pattern[previous_leg] = nil
                       if ENV['PI'] == "true"
                         system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg_array[idx-1] + ' -c leg'
                       end  

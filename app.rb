@@ -28,7 +28,7 @@ module InThePattern
       @settings = Setting.first
       @airport = Airport.find(@settings.airport_id)
       @arrivals = Arrival.order(arrived_at: :desc).limit(3)
-      @departures = Departure.order(departed_at: :desc).limit(4)
+      @departures = Departure.order(departed_at: :desc).limit(3)
       erb :"status_board.html", layout: false
     end
     
