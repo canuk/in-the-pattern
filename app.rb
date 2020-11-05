@@ -1,6 +1,8 @@
 require 'sinatra/base'
 require "sinatra/activerecord"
 require "sinatra/cross_origin"
+require 'sinatra/custom_logger'
+require 'logger'
 
 require_relative "models/airport.rb"
 require_relative "models/arrival.rb"
@@ -9,14 +11,19 @@ require_relative "models/setting.rb"
 
 module InThePattern
   class App < Sinatra::Base
+    helpers Sinatra::CustomLogger
     register Sinatra::ActiveRecordExtension
     use Rack::MethodOverride
     
     configure do
+      set :database, {adapter: "sqlite3", database: "itp.sqlite3"}
+          
       enable :cross_origin
-    end
-    
-    set :database, {adapter: "sqlite3", database: "itp.sqlite3"}
+      
+      logger = Logger.new(File.open("#{root}/log/#{environment}.log", 'a'))
+      logger.level = Logger::DEBUG if development?
+      set :logger, logger
+    end  
     
     get "/" do
       @settings = Setting.first
