@@ -39,6 +39,7 @@ GEM
     sinatra-activerecord (2.0.19)
       activerecord (>= 4.1)
       sinatra (>= 1.0)
+    sinatra-cross_origin (0.3.2)
     sqlite3 (1.4.2)
     thread_safe (0.3.6)
     tilt (2.0.10)
@@ -59,6 +60,7 @@ DEPENDENCIES
   redis
   sinatra
   sinatra-activerecord
+  sinatra-cross_origin (~> 0.3.1)
   sqlite3
 
 RUBY VERSION

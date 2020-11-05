@@ -1,5 +1,6 @@
 require 'sinatra/base'
 require "sinatra/activerecord"
+require "sinatra/cross_origin"
 
 require_relative "models/airport.rb"
 require_relative "models/arrival.rb"
@@ -9,6 +10,10 @@ require_relative "models/setting.rb"
 module InThePattern
   class App < Sinatra::Base
     register Sinatra::ActiveRecordExtension
+    
+    configure do
+      enable :cross_origin
+    end
     
     set :database, {adapter: "sqlite3", database: "itp.sqlite3"}
     
