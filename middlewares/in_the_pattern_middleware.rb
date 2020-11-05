@@ -149,7 +149,7 @@ module InThePattern
             # If the last timestamp was more than 2 minutes ago, then remove it.
             pattern_leg_array.each do |leg|
               if !current_pattern[leg].blank?
-                if current_pattern[leg]["last_seen"] <= Time.now - 20 # 120 seconds = 2 minutes
+                if current_pattern[leg]["last_seen"] <= Time.now - 15 # 15 seconds
                   if leg == "final"
                     # insert into arrivals database
                     Arrival.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], arrived_at: current_pattern[leg]["last_seen"])
