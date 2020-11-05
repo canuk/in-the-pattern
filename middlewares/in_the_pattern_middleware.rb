@@ -100,17 +100,9 @@ module InThePattern
         pattern_leg_array = ["upwind", "crosswind", "downwind", "base", "final"]
         welcome_message = Hash.new
         if @airport.left_pattern
-          welcome_message["upwind"] = "UPWIND"
-          welcome_message["crosswind"] = "XWIND"
-          welcome_message["downwind"] = "DNWIND"
-          welcome_message["base"] = "BASE"
-          welcome_message["final"] = "FINAL"
+          welcome_message = {"upwind"=>"UPWIND", "crosswind"=>"XWIND", "downwind"=>"DNWIND", "base"=>"BASE", "final"=>"FINAL"}
         else
-          welcome_message["upwind"] = "FINAL"
-          welcome_message["crosswind"] = "BASE"
-          welcome_message["downwind"] = "DNWIND"
-          welcome_message["base"] = "XWIND"
-          welcome_message["final"] = "UPWIND"  
+          welcome_message = {"upwind"=>"FINAL", "crosswind"=>"BASE", "downwind"=>"DNWIND", "base"=>"XWIND", "final"=>"UPWIND"} 
         end        
         if ENV['PI'] == "true"
           pattern_leg_array.each do |leg|
