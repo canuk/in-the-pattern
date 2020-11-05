@@ -27,7 +27,8 @@ module InThePattern
     get "/status_board" do
       @settings = Setting.first
       @airport = Airport.find(@settings.airport_id)
-      @arrivals = Arrival.order(arrived_at: :desc).limit(4)
+      @arrivals = Arrival.order(arrived_at: :desc).limit(3)
+      @departures = Departure.order(departed_at: :desc).limit(4)
       erb :"status_board.html", layout: false
     end
     
