@@ -27,8 +27,15 @@ module InThePattern
           end
         end
       end
-      Thread.new do
-      
+      begin
+        incoming_adsb_data = Thread.new {main_loop()}
+      rescue # any errors? kill the thread and restart
+        Thread.kill incoming_adsb_data
+        incoming_adsb_data = Thread.new {main_loop()}
+      end
+    end
+    
+    def main_loop
         exit_requested = false
         Kernel.trap( "INT" ) { exit_requested = true }
         
@@ -117,7 +124,6 @@ module InThePattern
         end
 
         while (line = sock.gets.chomp) &&  (!exit_requested)
-         
         #read next line from the socket - Ruby uses LF = \n to detect newline
         #gets returns a string and a '\n' character, while chomp removes this '\n'
         #gets returns nil at end of file.
@@ -201,9 +207,7 @@ module InThePattern
         if ENV['PI'] == "true"
           system 'python3 /home/pi/in-the-pattern/oled/aip.py -l final -c all' # clear the pattern
         end
-        sock.close               # Close the socket when done     
-    
-      end #Thread
+        sock.close               # Close the socket when done           
     end
 
     def call(env)
