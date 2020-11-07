@@ -27,13 +27,17 @@ module InThePattern
           end
         end
       end
+      main_loop_thread()
+    end
+    
+    def main_loop_thread
       begin
         incoming_adsb_data = Thread.new {main_loop()}
       rescue # any errors? kill the thread and restart
         Thread.kill incoming_adsb_data
-        incoming_adsb_data = Thread.new {main_loop()}
+        main_loop_thread()
       end
-    end
+    end      
     
     def main_loop
         exit_requested = false
@@ -181,12 +185,14 @@ module InThePattern
                     end  
                     # Now check to see if we need to remove the airplane from previous leg
                     previous_leg = pattern_leg_array[idx-1]
-                    if current_pattern[previous_leg]["n_number"] == airplane["n_number"]
-                      current_pattern[previous_leg] = nil
-                      if ENV['PI'] == "true"
-                        system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg_array[idx-1] + ' -c leg'
-                      end  
-                    end                     
+                    if !current_pattern[previous_leg].blank?
+                      if current_pattern[previous_leg]["n_number"] == airplane["n_number"]
+                        current_pattern[previous_leg] = nil
+                        if ENV['PI'] == "true"
+                          system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + pattern_leg_array[idx-1] + ' -c leg'
+                        end  
+                      end    
+                    end                 
                   #It's already logged in the hash, update the last seen
                   elsif current_pattern[leg]["n_number"] == airplane["n_number"] 
                     current_pattern[leg]["last_seen"] = Time.now
