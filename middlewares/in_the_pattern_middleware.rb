@@ -148,10 +148,10 @@ module InThePattern
             airplane["last_seen"] = Time.now
             
             # see if any airplanes in the pattern need to be removed.
-            # If the last timestamp was more than 20 seconds, then remove it.
+            # If the last timestamp was more than 15 seconds, then remove it.
             pattern_leg_array.each do |leg|
               if !current_pattern[leg].blank?
-                if current_pattern[leg]["last_seen"] <= Time.now - 20 # 20 seconds ago
+                if current_pattern[leg]["last_seen"] <= Time.now - 15 # 15 seconds ago
                   if leg == "final"
                     # insert into arrivals database
                     Arrival.find_or_create_by(airport_id: @airport.id, tail_number: current_pattern[leg]["n_number"], arrived_at: current_pattern[leg]["last_seen"])

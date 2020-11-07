@@ -163,7 +163,7 @@ module InThePattern
     get "/assets/js/application.js" do
       content_type :js
       @scheme = ENV['RACK_ENV'] == "production" ? "wss://" : "ws://"
-      erb :"application.js"
+      erb :"application.js", layout: false
     end
   end
 end
