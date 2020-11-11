@@ -12,6 +12,42 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_tca9548a
 import adafruit_ssd1306
 
+def scroll_down(virtual, pos):
+    x, y = pos
+    if virtual.height > device.height:
+        while y < virtual.height - device.height:
+            virtual.set_position((x, y))
+            y += 1
+        y -= 1
+    return (x, y)
+
+
+def scroll_right(virtual, pos):
+    x, y = pos
+    if virtual.width > device.width:
+        while x < virtual.width - device.width:
+            virtual.set_position((x, y))
+            x += 1
+        x -= 1
+    return (x, y)
+
+
+def scroll_up(virtual, pos):
+    x, y = pos
+    while y >= 0:
+        virtual.set_position((x, y))
+        y -= 1
+    y = 0
+    return (x, y)
+
+
+def scroll_left(virtual, pos):
+    x, y = pos
+    while x >= 0:
+        virtual.set_position((x, y))
+        x -= 1
+    x = 0
+    return (x, y)
 
 def main(argv):
     i2c = busio.I2C(board.SCL, board.SDA)

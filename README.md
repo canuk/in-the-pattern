@@ -21,7 +21,7 @@ Copy `env.sample` to `.env` to get started.
 `cp env.sample .env`
 
 Boot the app with foreman.
-
+ 
 ```
 $ foreman start
 ```

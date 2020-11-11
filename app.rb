@@ -82,7 +82,7 @@ module InThePattern
       @settings.adsbx_api_key = params[:adsbx_api_key]
       @settings.updated_at = Time.now
       @settings.save!
-            
+      
       erb :"settings.html"
     end
     
