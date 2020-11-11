@@ -27,7 +27,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hl:t:c:p",["leg=","tail=","clear=","pattern="])
     except getopt.GetoptError:
-        print('aip.py -l <pattern leg> -t <tail number> -c <clear {leg, all}>, -p <left pattern {true or false}>\nAcceptable pattern legs are upwind, crosswind, downwind, base, or final')
+        print('aip.py -l <pattern leg> -t <tail number> -c <clear {leg, all}>, -p <pattern {l or r}>\nAcceptable pattern legs are upwind, crosswind, downwind, base, or final')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -42,10 +42,9 @@ def main(argv):
         elif opt in ("-p", "--pattern"):
             pattern_direction = arg
 
-    if pattern_direction == "r":
-        pattern_direction = "r"
-    else:
-        left_pattern = "l"
+    if pattern_direction != "r":
+        pattern_direction = "l"
+    
     # multiplexer index for each OLED
     pattern_leg = {}
     pattern_leg['downwind'] = 4    
