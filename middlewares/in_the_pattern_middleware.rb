@@ -64,6 +64,7 @@ module InThePattern
     
     def initialize_traffic_pattern_details
       @airport = Airport.find(@settings.airport_id)
+      @airport.left_pattern ? @pattern_direction = "l" : @pattern_direction = "r" 
       @tpa = @airport.field_elevation + 1500
 
       # Runway Numbers
@@ -100,7 +101,7 @@ module InThePattern
       welcome_message = {"upwind"=>"UPWIND", "crosswind"=>"XWIND", "downwind"=>"DNWIND", "base"=>"BASE", "final"=>"FINAL"}       
       if ENV['PI'] == "true"
         @pattern_leg_array.each do |leg|
-          system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + welcome_message[leg]  + ' -p ' + @airport.left_pattern.to_s
+          system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + welcome_message[leg]  + ' -p ' + @pattern_direction
         end
       end    
     end          
@@ -145,7 +146,7 @@ module InThePattern
                     puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
                     @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
                     if ENV['PI'] == "true"
-                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"] + ' -p ' + @airport.left_pattern.to_s
+                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"] + ' -p ' + @pattern_direction
                     end  
                     # Now check to see if we need to remove the airplane from previous leg
                     previous_leg = @pattern_leg_array[idx-1]
@@ -233,7 +234,7 @@ module InThePattern
                       puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
                       @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
                       if ENV['PI'] == "true"
-                        system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"] + ' -lp ' + @airport.left_pattern
+                        system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"] + ' -p ' + @pattern_direction
                       end  
                       # Now check to see if we need to remove the airplane from previous leg
                       previous_leg = @pattern_leg_array[idx-1]
