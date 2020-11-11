@@ -25,7 +25,7 @@ def main(argv):
     pattern_direction = "l"
 
     try:
-        opts, args = getopt.getopt(argv,"hl:t:c:p",["leg=","tail=","clear=","pattern="])
+        opts, args = getopt.getopt(argv,"hl:t:c:p:",["leg=","tail=","clear=","pattern="])
     except getopt.GetoptError:
         print('aip.py -l <pattern leg> -t <tail number> -c <clear {leg, all}>, -p <pattern {l or r}>\nAcceptable pattern legs are upwind, crosswind, downwind, base, or final')
         sys.exit(2)
