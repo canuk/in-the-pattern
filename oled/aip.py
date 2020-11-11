@@ -12,43 +12,6 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_tca9548a
 import adafruit_ssd1306
 
-def scroll_down(virtual, pos):
-    x, y = pos
-    if virtual.height > device.height:
-        while y < virtual.height - device.height:
-            virtual.set_position((x, y))
-            y += 1
-        y -= 1
-    return (x, y)
-
-
-def scroll_right(virtual, pos):
-    x, y = pos
-    if virtual.width > device.width:
-        while x < virtual.width - device.width:
-            virtual.set_position((x, y))
-            x += 1
-        x -= 1
-    return (x, y)
-
-
-def scroll_up(virtual, pos):
-    x, y = pos
-    while y >= 0:
-        virtual.set_position((x, y))
-        y -= 1
-    y = 0
-    return (x, y)
-
-
-def scroll_left(virtual, pos):
-    x, y = pos
-    while x >= 0:
-        virtual.set_position((x, y))
-        x -= 1
-    x = 0
-    return (x, y)
-
 def main(argv):
     i2c = busio.I2C(board.SCL, board.SDA)
     
@@ -59,7 +22,7 @@ def main(argv):
     input_leg = ''
     input_tail = ''
     clear_oled = "false"
-    left_pattern = "true"
+    pattern_direction = "l"
 
     try:
         opts, args = getopt.getopt(argv,"hl:t:c:p",["leg=","tail=","clear=","pattern="])
@@ -76,17 +39,17 @@ def main(argv):
             input_tail = arg
         elif opt in ("-c", "--clear"):
             clear_oled = arg
-        elif opt in ("-p", "--left-pattern"):
-            left_pattern = arg
+        elif opt in ("-p", "--pattern"):
+            pattern_direction = arg
 
-    if left_pattern == "false":
-        left_pattern = "false"
+    if pattern_direction == "r":
+        pattern_direction = "r"
     else:
-        left_pattern = "true"
+        left_pattern = "l"
     # multiplexer index for each OLED
     pattern_leg = {}
     pattern_leg['downwind'] = 4    
-    if left_pattern == "true":
+    if pattern_direction == "l":
         pattern_leg['upwind'] = 2
         pattern_leg['crosswind'] = 3
         pattern_leg['base'] = 5
