@@ -64,6 +64,7 @@ module InThePattern
     get "/settings" do
       @settings = Setting.first
       @airports = Airport.all
+      @notice = ""
       erb :"settings.html"
     end
     
@@ -81,7 +82,14 @@ module InThePattern
       @settings.port_1090dump = params[:port_1090dump]
       @settings.adsbx_api_key = params[:adsbx_api_key]
       @settings.updated_at = Time.now
-      @settings.save!
+      
+      if @settings.save!
+        @notice = "Settings Saved"
+      else
+        @notice = "Settings Not Saved"
+      end
+      
+      # InThePatternBackend::restart_adsb_source_after_settings_change.run!
       
       erb :"settings.html"
     end

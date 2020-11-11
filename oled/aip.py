@@ -83,6 +83,24 @@ def main(argv):
             input_tail = arg
         elif opt in ("-c", "--clear"):
             clear_oled = arg
+        elif opt in ("-lp", "--left-pattern"):
+            left_pattern = arg
+
+    if left_pattern != "false":
+        left_pattern = "true"
+    # multiplexer index for each OLED
+    pattern_leg = {}
+    pattern_leg['downwind'] = 4    
+    if left_pattern == "true"
+        pattern_leg['upwind'] = 2
+        pattern_leg['crosswind'] = 3
+        pattern_leg['base'] = 5
+        pattern_leg['final'] = 6  
+    else                 
+        pattern_leg['upwind'] = 6
+        pattern_leg['crosswind'] = 5
+        pattern_leg['base'] = 3
+        pattern_leg['final'] = 2      
     
     tail_number = input_tail
     
@@ -106,6 +124,13 @@ def main(argv):
     draw_tail_number = ImageDraw.Draw(tail_number_img)
     w, h = draw_tail_number.textsize(tail_number, font=tail_font) #Figure out the height and width of tail number so we can center it
     draw_tail_number.text(((W-w)/2,(H-h)/2), tail_number, font=tail_font, fill=255)
+    offset = 0
+    # if input_leg == "upwind":
+        # for i in range(0,16):
+        #     leg_name.scroll(-8,0)
+        #     leg_name.show()
+        # leg_name.image(tail_number_img)
+        # leg_name.show()    
     leg_name.image(tail_number_img)
     leg_name.show()
 

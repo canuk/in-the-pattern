@@ -29,15 +29,15 @@ module InThePattern
         end
       end
       if @settings.use_1090dump
-        local_1090dump_thread()
+        local_1090dump_thread
       else
-        remote_adsbx_thread()
+        remote_adsbx_thread
       end
     end
     
     def local_1090dump_thread
       puts "Starting local 1090dump Thread."
-      @incoming_local_adsb_data = Thread.new { local_1090dump() }
+      @incoming_local_adsb_data = Thread.new { local_1090dump }
     rescue
       sleep(2)
       retry
@@ -45,15 +45,21 @@ module InThePattern
     
     def remote_adsbx_thread
       puts "Starting remote ADSB-Exchange Thread."
-      @incoming_remote_adsb_data = Thread.new { remote_adsbx() }
+      @incoming_remote_adsb_data = Thread.new { remote_adsbx }
     rescue
       sleep(2)
       retry
     end     
     
-    def restart_main_loop_after_settings_change
-      Thread.kill @incoming_local_adsb_data 
-      main_loop_thread()
+    def restart_adsb_source_after_settings_change
+      @settings = Setting.first
+      Thread.kill @incoming_local_adsb_data
+      Thread.kill @@incoming_remote_adsb_data
+      if @settings.use_1090dump
+        local_1090dump_thread
+      else
+        remote_adsbx_thread
+      end
     end
     
     def initialize_traffic_pattern_details
@@ -75,19 +81,11 @@ module InThePattern
       
       #Traffic Pattern
       @pattern_fence = Hash.new
+      @airport.upwind == nil ? @pattern_fence["upwind"] = [] : @pattern_fence["upwind"] = JSON.parse(@airport.upwind)
+      @airport.crosswind == nil ? @pattern_fence["crosswind"] = [] : @pattern_fence["crosswind"] = JSON.parse(@airport.crosswind)          
       @airport.downwind == nil ? @pattern_fence["downwind"] = [] : @pattern_fence["downwind"] = JSON.parse(@airport.downwind)
-      # Variables and Hashes are all "hardwired" for a Left (Standard) Pattern
-      if @airport.left_pattern
-        @airport.upwind == nil ? @pattern_fence["upwind"] = [] : @pattern_fence["upwind"] = JSON.parse(@airport.upwind)
-        @airport.crosswind == nil ? @pattern_fence["crosswind"] = [] : @pattern_fence["crosswind"] = JSON.parse(@airport.crosswind)          
-        @airport.base == nil ? @pattern_fence["base"] = [] : @pattern_fence["base"] = JSON.parse(@airport.base)
-        @airport.final == nil ? @pattern_fence["final"] = [] : @pattern_fence["final"] = JSON.parse(@airport.final)
-      else # its a Right Pattern, so everything is "backwards" since we have all the variables in the code hard-wired for Left (standard) patterns
-        @airport.upwind == nil ? @pattern_fence["final"] = [] : @pattern_fence["final"] = JSON.parse(@airport.upwind)
-        @airport.crosswind == nil ? @pattern_fence["base"] = [] : @pattern_fence["base"] = JSON.parse(@airport.crosswind)
-        @airport.base == nil ? @pattern_fence["crosswind"] = [] : @pattern_fence["crosswind"] = JSON.parse(@airport.base)
-        @airport.final == nil ? @pattern_fence["upwind"] = [] : @pattern_fence["upwind"] = JSON.parse(@airport.final)          
-      end  
+      @airport.base == nil ? @pattern_fence["base"] = [] : @pattern_fence["base"] = JSON.parse(@airport.base)
+      @airport.final == nil ? @pattern_fence["final"] = [] : @pattern_fence["final"] = JSON.parse(@airport.final)
       @airport.overhead == nil ? @overhead = [] : @overhead = JSON.parse(@airport.overhead)   
               
       # Initialize OLED pattern leg displays
@@ -99,14 +97,10 @@ module InThePattern
         @current_pattern[leg] = Hash.new
       end      
       welcome_message = Hash.new
-      if @airport.left_pattern
-        welcome_message = {"upwind"=>"UPWIND", "crosswind"=>"XWIND", "downwind"=>"DNWIND", "base"=>"BASE", "final"=>"FINAL"}
-      else
-        welcome_message = {"upwind"=>"FINAL", "crosswind"=>"BASE", "downwind"=>"DNWIND", "base"=>"XWIND", "final"=>"UPWIND"} 
-      end        
+      welcome_message = {"upwind"=>"UPWIND", "crosswind"=>"XWIND", "downwind"=>"DNWIND", "base"=>"BASE", "final"=>"FINAL"}       
       if ENV['PI'] == "true"
         @pattern_leg_array.each do |leg|
-          system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + welcome_message[leg]
+          system 'python3 /home/pi/in-the-pattern/oled/aip.py -l '+ leg.to_s + ' -t' + welcome_message[leg]  + ' -lp ' + @airport.left_pattern
         end
       end    
     end          
@@ -151,7 +145,7 @@ module InThePattern
                     puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
                     @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
                     if ENV['PI'] == "true"
-                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
+                      system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"] + ' -lp ' + @airport.left_pattern
                     end  
                     # Now check to see if we need to remove the airplane from previous leg
                     previous_leg = @pattern_leg_array[idx-1]
@@ -239,7 +233,7 @@ module InThePattern
                       puts "#{leg.upcase} - ID: #{airplane['n_number']} ALT: #{airplane['alt']}"
                       @redis.publish(CHANNEL, JSON.generate({:date_type => "pattern_location", :who => airplane["n_number"], :traffic_leg => leg, :altitude => airplane["alt"].to_s}))
                       if ENV['PI'] == "true"
-                        system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"]
+                        system 'python3 /home/pi/in-the-pattern/oled/aip.py -l ' + leg + ' -t ' + airplane["n_number"] + ' -lp ' + @airport.left_pattern
                       end  
                       # Now check to see if we need to remove the airplane from previous leg
                       previous_leg = @pattern_leg_array[idx-1]
