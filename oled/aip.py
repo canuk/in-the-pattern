@@ -55,23 +55,16 @@ def main(argv):
     # Create the TCA9548A object and give it the I2C bus
     tca = adafruit_tca9548a.TCA9548A(i2c)
     tail_font = ImageFont.truetype('/home/pi/in-the-pattern/oled/16x8pxl-mono.ttf', 38)
-
-    # multiplexer index for each OLED
-    pattern_leg = {}
-    pattern_leg['upwind'] = 2
-    pattern_leg['crosswind'] = 3
-    pattern_leg['downwind'] = 4
-    pattern_leg['base'] = 5
-    pattern_leg['final'] = 6
     
     input_leg = ''
     input_tail = ''
     clear_oled = "false"
+    left_pattern = "true"
 
     try:
-        opts, args = getopt.getopt(argv,"hl:t:c:",["leg=","tail=","clear="])
+        opts, args = getopt.getopt(argv,"hl:t:c:p",["leg=","tail=","clear=","pattern="])
     except getopt.GetoptError:
-        print('aip.py -l <pattern leg> -t <tail number>\nAcceptable pattern legs are upwind, crosswind, downwind, base, or final')
+        print('aip.py -l <pattern leg> -t <tail number> -c <clear {leg, all}>, -p <left pattern {true or false}>\nAcceptable pattern legs are upwind, crosswind, downwind, base, or final')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -83,20 +76,22 @@ def main(argv):
             input_tail = arg
         elif opt in ("-c", "--clear"):
             clear_oled = arg
-        elif opt in ("-lp", "--left-pattern"):
+        elif opt in ("-p", "--left-pattern"):
             left_pattern = arg
 
-    if left_pattern != "false":
+    if left_pattern == "false":
+        left_pattern = "false"
+    else:
         left_pattern = "true"
     # multiplexer index for each OLED
     pattern_leg = {}
     pattern_leg['downwind'] = 4    
-    if left_pattern == "true"
+    if left_pattern == "true":
         pattern_leg['upwind'] = 2
         pattern_leg['crosswind'] = 3
         pattern_leg['base'] = 5
         pattern_leg['final'] = 6  
-    else                 
+    else:
         pattern_leg['upwind'] = 6
         pattern_leg['crosswind'] = 5
         pattern_leg['base'] = 3
