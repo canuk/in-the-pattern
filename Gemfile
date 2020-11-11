@@ -9,6 +9,7 @@ gem 'sinatra-contrib'
 gem 'logger'
 gem "puma"
 gem "redis"
+gem 'rest-client'
 
 gem "sinatra-activerecord"
 gem "sqlite3"
