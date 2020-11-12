@@ -15,6 +15,10 @@ module InThePattern
     register Sinatra::ActiveRecordExtension
     use Rack::MethodOverride
     
+    use Rack::Auth::Basic do |username, password|
+      username == 'itp' and password == 'adventureawaits'
+    end    
+    
     configure do
       set :database, {adapter: "sqlite3", database: "itp.sqlite3"}
           

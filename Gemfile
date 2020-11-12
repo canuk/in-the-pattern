@@ -10,6 +10,7 @@ gem 'logger'
 gem "puma"
 gem "redis"
 gem 'rest-client'
+gem 'geocoder'
 
 gem "sinatra-activerecord"
 gem "sqlite3"
