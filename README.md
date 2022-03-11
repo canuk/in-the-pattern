@@ -178,7 +178,7 @@ Install nginx so we can access at inthepattern.local without a port number
 sudo apt update
 sudo apt install -y nginx
 sudo rm /etc/nginx/sites-enabled/default
-sudo cp rpi_system_files/nginx.sites-enabled.default /etc/nginxsites-enabled/default
+sudo cp rpi_system_files/nginx.sites-enabled.default /etc/nginx/sites-enabled/default
 // Start on Boot
 sudo update-rc.d -f nginx defaults;
 ```
