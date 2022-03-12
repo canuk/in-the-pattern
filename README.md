@@ -73,7 +73,8 @@ sudo apt-get install -y unclutter
 Install Python Libraries
 ```
 sudo apt install -y python3-dev
-sudo apt install -y python-smbus i2c-tools python3-pil python3-pip python3-setuptools python3-rpi.gpio
+sudo apt install -y i2c-tools python3-pil python3-pip python3-setuptools python3-rpi.gpio
+sudo pip3 install smbus2
    
 sudo pip3 install adafruit-circuitpython-tca9548a
 sudo pip3 install adafruit-circuitpython-ssd1306
